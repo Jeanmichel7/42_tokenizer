@@ -1,0 +1,644 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+}
+
+/*
+*
+*
+*
+*
+*
+*
+*
+*/
+a {
+  font-weight: 500;
+  color: #646cff;
+  text-decoration: inherit;
+}
+a:hover {
+  color: #535bf2;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+}
+
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #1a1a1a;
+  cursor: pointer;
+  transition: border-color 0.25s;
+}
+button:hover {
+  border-color: #646cff;
+}
+button:focus,
+button:focus-visible {
+  outline: 4px auto -webkit-focus-ring-color;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+  a:hover {
+    color: #747bff;
+  }
+  button {
+    background-color: #f9f9f9;
+  }
+}
+
+/*
+
+.game-card.home-card.selectable.selected {
+}
+
+.game-card.home-card.selectable.selected {
+}
+.game-card.selected[data-v-2cfcf558] {
+  border-color: rgb(179, 179, 0);
+}
+.game-card.selected[data-v-2cfcf558] {
+  border: 2px solid yellow;
+  border-radius: 16px;
+  -webkit-animation-duration: 0.5s;
+  animation-duration: 0.5s;
+  -webkit-animation-name: game-card-glow-2cfcf558;
+  animation-name: game-card-glow-2cfcf558;
+  -webkit-animation-iteration-count: infinite;
+  animation-iteration-count: infinite;
+  -webkit-animation-timing-function: ease-in-out;
+  animation-timing-function: ease-in-out;
+  -webkit-animation-direction: alternate;
+  animation-direction: alternate;
+}
+.game-card.selectable[data-v-2cfcf558] {
+  cursor: pointer;
+}
+.home-card[data-v-2cfcf558] {
+  background-image: url(https://cryptozombies.io/course/78bca95….png);
+}
+.home-card[data-v-2cfcf558] {
+  background-image: url(https://cryptozombies.io/course/78bca95….png);
+}
+.game-card[data-v-2cfcf558] {
+  height: 42vh;
+  width: 29vh;
+  margin: -1rem;
+  background-size: 100%;
+  position: relative;
+  -webkit-transform: scale(0.8);
+  transform: scale(0.8);
+}
+.home-card {
+  background-image: url(https://cryptozombies.io/course/78bca95….png);
+}
+.home-card {
+  background-image: url(https://cryptozombies.io/course/78bca95….png);
+  -webkit-transition: -webkit-transform 1s;
+  transition: -webkit-transform 1s;
+  transition: transform 1s;
+  transition: transform 1s, -webkit-transform 1s;
+  cursor: pointer;
+}
+.game-card {
+  height: 260px;
+  width: 180px;
+  background-size: 100%;
+  position: relative;
+}
+*,
+*::before,
+*::after {
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+}
+*,
+*::before,
+*::after {
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+}
+div {
+  display: block;
+}
+
+.zombie-char[data-v-2cfcf558] {
+  left: -5vh;
+  top: -21vh;
+  -webkit-transform: scale(0.6);
+  transform: scale(0.6);
+}
+.home-card .zombie-char {
+  left: -6vh;
+  top: -27vh;
+  -webkit-transform: scale(0.4);
+  transform: scale(0.4);
+}
+
+.zombie-char[data-v-e09ae098] {
+  position: relative;
+}
+*,
+*::before,
+*::after {
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+}
+*,
+*::before,
+*::after {
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+}
+div {
+  display: block;
+}
+
+element.style {
+  display: none;
+}
+.zombie-loading[data-v-e09ae098] {
+  background-image: url(https://cryptozombies.io/course/f29084c….png);
+  background-color: initial;
+}
+.zombie-parts[data-v-e09ae098] {
+  position: relative;
+  margin-left: -2vh;
+  margin-top: 31vh;
+}
+.zombie-loading[data-v-e09ae098] {
+  background: url(https://cryptozombies.io/course/f29084c….png) left center;
+  background-size: cover;
+  height: 287px;
+  width: 192px;
+  position: absolute;
+  left: 16vh;
+  -webkit-animation: play-e09ae098 0.7s steps(24) infinite;
+  animation: play-e09ae098 0.7s steps(24) infinite;
+}
+*,
+*::before,
+*::after {
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+}
+*,
+*::before,
+*::after {
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+}
+div {
+  display: block;
+}
+
+element.style {
+}
+.zombie-parts[data-v-e09ae098] {
+  position: relative;
+  margin-left: -2vh;
+  margin-top: 31vh;
+}
+*,
+*::before,
+*::after {
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+}
+*,
+*::before,
+*::after {
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+}
+div {
+  display: block;
+}
+element.style {
+}
+.zombie-char[data-v-2cfcf558] .zombie-card {
+  margin-left: -5vh;
+}
+.bg-shaded {
+  background-color: rgba(0, 0, 0, 0.2) !important;
+}
+.card {
+  background-color: rgb(24, 26, 27);
+  border-color: rgba(140, 130, 115, 0.13);
+}
+.bg-shaded {
+  background-color: rgba(0, 0, 0, 0.2) !important;
+}
+.card {
+  background-color: rgb(24, 26, 27);
+  border-color: rgba(140, 130, 115, 0.13);
+}
+
+element.style {
+  filter: hue-rotate(208.8deg);
+  display: none;
+}
+.left-feet[data-v-e09ae098] {
+  width: 4vh;
+  position: absolute;
+  left: 18.3vh;
+  top: 30vh;
+}
+img {
+  vertical-align: middle;
+  border-style: none;
+}
+img {
+  vertical-align: middle;
+  border-style: none;
+}
+*,
+*::before,
+*::after {
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+}
+*,
+*::before,
+*::after {
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+}
+img {
+  overflow-clip-margin: content-box;
+  overflow: clip;
+}
+
+element.style {
+  filter: hue-rotate(208.8deg);
+  display: none;
+}
+.right-feet[data-v-e09ae098] {
+  width: 3.3vh;
+  position: absolute;
+  left: 22.3vh;
+  top: 30.3vh;
+}
+img {
+  vertical-align: middle;
+  border-style: none;
+}
+img {
+  vertical-align: middle;
+  border-style: none;
+}
+*,
+*::before,
+*::after {
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+}
+*,
+*::before,
+*::after {
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+}
+img {
+  overflow-clip-margin: content-box;
+  overflow: clip;
+}
+
+element.style {
+  filter: hue-rotate(208.8deg);
+  display: none;
+}
+.left-leg[data-v-e09ae098] {
+  width: 4vh;
+  position: absolute;
+  left: 18.3vh;
+  top: 27vh;
+}
+img {
+  vertical-align: middle;
+  border-style: none;
+}
+img {
+  vertical-align: middle;
+  border-style: none;
+}
+*,
+*::before,
+*::after {
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+}
+*,
+*::before,
+*::after {
+  -webkit-box-sizing: border-box;
+  box-sizing: border-box;
+}
+img {
+  overflow-clip-margin: content-box;
+  overflow: clip;
+}
+
+.right-leg[data-v-e09ae098] {
+  width: 3.3vh;
+  position: absolute;
+  left: 22.3vh;
+  top: 27.6vh;
+}
+.left-thigh[data-v-e09ae098] {
+  width: 6vh;
+  position: absolute;
+  left: 17.3vh;
+  top: 22vh;
+}
+.right-thigh[data-v-e09ae098] {
+  width: 6vh;
+  position: absolute;
+  left: 20.4vh;
+  top: 22vh;
+}
+.left-forearm[data-v-e09ae098] {
+  width: 4vh;
+  position: absolute;
+  left: 22.3vh;
+  top: 20vh;
+}
+.right-forearm[data-v-e09ae098] {
+  width: 4vh;
+  position: absolute;
+  left: 26.4vh;
+  top: 20vh;
+}
+.right-upper-arm[data-v-e09ae098] {
+  width: 6vh;
+  position: absolute;
+  left: 23.4vh;
+  top: 16vh;
+}
+.zombie-loading {
+  background: url("~@/assets/zombiebg/zombierun.png") left center;
+  background-size: cover;
+  height: 287px;
+  width: 192px;
+  position: absolute;
+  left: 16vh;
+  animation: play 0.7s steps(24) infinite;
+}
+
+@keyframes play {
+  100% {
+    background-position: -4608px;
+  }
+}
+
+.zombie-parts-bin-component {
+  background-image: url("~@/assets/zombiebg/walls.jpg");
+  background-size: cover;
+  min-height: 100%;
+}
+
+.zombie-preview {
+  height: 95vh;
+  width: 55vh;
+  background-size: cover;
+  background-image: url("~@/assets/zombiebg/lesson-complete-bg.png");
+}
+
+.zombie-char {
+  position: relative;
+}
+
+.share-page .zombie-parts {
+  margin-left: 4vh;
+}
+
+.zombie-battle-component .zombie-parts {
+  margin-left: -1vh;
+}
+
+.zombie-parts {
+  position: relative;
+  margin-left: -2vh;
+  margin-top: 31vh;
+}
+.zombie-parts .head {
+  width: 28vh;
+  position: absolute;
+  left: 13vh;
+  top: -4vh;
+}
+.zombie-parts .eye {
+  width: 13vh;
+  position: absolute;
+  left: 23vh;
+  top: 8vh;
+}
+.zombie-parts .shirt {
+  width: 13vh;
+  position: absolute;
+  left: 15.6vh;
+  top: 13vh;
+}
+
+.mouth {
+  width: 6vh;
+  position: absolute;
+  left: 26.6vh;
+  top: 15vh;
+}
+
+.torso {
+  width: 13vh;
+  position: absolute;
+  left: 15.6vh;
+  top: 13vh;
+}
+
+.left-thigh {
+  width: 6vh;
+  position: absolute;
+  left: 17.3vh;
+  top: 22vh;
+}
+
+.right-thigh {
+  width: 6vh;
+  position: absolute;
+  left: 20.4vh;
+  top: 22vh;
+}
+
+.cat-legs {
+  width: 10vh;
+  position: absolute;
+  left: 15.4vh;
+  top: 18vh;
+}
+
+.left-hand {
+  width: 4vh;
+  position: absolute;
+  left: 24.3vh;
+  top: 19vh;
+}
+
+.right-hand {
+  width: 4vh;
+  position: absolute;
+  left: 28.4vh;
+  top: 19vh;
+}
+
+.left-forearm {
+  width: 4vh;
+  position: absolute;
+  left: 22.3vh;
+  top: 20vh;
+}
+
+.right-forearm {
+  width: 4vh;
+  position: absolute;
+  left: 26.4vh;
+  top: 20vh;
+}
+
+.left-upper-arm {
+  width: 6vh;
+  position: absolute;
+  left: 19.3vh;
+  top: 16vh;
+}
+
+.right-upper-arm {
+  width: 6vh;
+  position: absolute;
+  left: 23.4vh;
+  top: 16vh;
+}
+
+.left-leg {
+  width: 4vh;
+  position: absolute;
+  left: 18.3vh;
+  top: 27vh;
+}
+
+.right-leg {
+  width: 3.3vh;
+  position: absolute;
+  left: 22.3vh;
+  top: 27.6vh;
+}
+
+.left-feet {
+  width: 4vh;
+  position: absolute;
+  left: 18.3vh;
+  top: 30vh;
+}
+
+.right-feet {
+  width: 3.3vh;
+  position: absolute;
+  left: 22.3vh;
+  top: 30.3vh;
+}
+
+.zombie-name {
+  text-transform: uppercase;
+  font-weight: bold;
+  text-shadow: 5px 5px 5px rgba(0, 0, 0, 0.2);
+}
+
+.zombie-details {
+  position: absolute;
+  bottom: 5%;
+  left: 50%;
+  width: 300px;
+  margin-left: -150px;
+  text-align: center;
+  font-size: 24px;
+  color: white;
+  font-weight: bold;
+}
+
+.zombie-name {
+  font-weight: bold;
+}
+
+.hide-overflow-text {
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.zombie-deck-component {
+  background-image: url("~@/assets/zombiebg/walls.jpg");
+  background-size: cover;
+  height: 100%;
+  width: 100%;
+  overflow: auto;
+}
+
+.game-card {
+  height: 40vh;
+  width: 29vh;
+  background-size: 100%;
+  position: relative;
+}
+
+.home-card {
+  background-image: url("~@/assets/zombiebg/homecard@2x.png");
+}
+
+.zombie-char {
+  left: -5vh;
+  top: -21vh;
+  transform: scale(0.6);
+}
+
+.zombie-char >>> .zombie-card {
+  margin-left: -5vh;
+}
+
+@keyframes play {
+  100% {
+    background-position: -10240px;
+  }
+}
+
+*/
