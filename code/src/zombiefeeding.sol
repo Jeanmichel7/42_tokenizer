@@ -39,6 +39,12 @@ contract ZombieFeeding is ZombieFactory {
       return (_zombie.readyTime <= block.timestamp);
   }
 
+  function _generateRandomHumainDna(string memory _str) private view returns (uint) {
+    uint rand = uint(keccak256(abi.encodePacked(_str)));
+    return rand % dnaModulus;
+  }
+
+
   function feedAndMultiply(uint _zombieId, uint _targetDna, string memory _species) internal onlyOwnerOf(_zombieId) {
     Zombie storage myZombie = zombies[_zombieId];
     require(_isReady(myZombie));
@@ -55,5 +61,11 @@ contract ZombieFeeding is ZombieFactory {
     uint kittyDna;
     (,,,,,,,,,kittyDna) = kittyContract.getKitty(_kittyId);
     feedAndMultiply(_zombieId, kittyDna, "kitty");
+  }
+
+  function feedHumain(uint _zombieId) public {
+    uint randDna = _generateRandomHumainDna("humain");
+    randDna = randDna - randDna % 100;
+    feedAndMultiply(_zombieId, randDna, "humain");
   }
 }

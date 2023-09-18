@@ -12,7 +12,7 @@ contract Token42 is ERC20, Ownable {
 
     function createOneToken() public payable {
         require(msg.value == 0.0001 ether, "0.0001 ether is required");
-        _mint(msg.sender, 10 ** uint(decimals() - 4));
+        _mint(msg.sender, 10 ** uint(decimals()));
     }
 
     function getBalance(address account) public view returns (uint256) {

@@ -1,28 +1,36 @@
 import Header from "./components/Header";
 import AppBody from "./components/AppBody";
 import { useState, useEffect } from "react";
-import Web3, { Contract } from "web3";
-import { Address, ContractAbi } from "web3-types";
 import { tokenABI } from "./utils/token_abi";
 import { gameABI } from "./utils/game_abi";
+import {
+  Contract,
+  ethers,
+  BrowserProvider,
+  Provider,
+  Signer,
+  AddressLike,
+} from "ethers";
 
 function App() {
-  const [web3, setWeb3] = useState<Web3 | null>(null);
-  const [contractToken, setContractToken] = useState<Contract<ContractAbi>>();
-  const [contractGame, setContractGame] = useState<Contract<ContractAbi>>();
-  const [myAddress, setMyAddress] = useState<Address>();
+  const [provider, setProvider] = useState<Provider | null>(null);
+  const [signer, setSigner] = useState<Signer | null>(null);
+  const [contractToken, setContractToken] = useState<Contract>();
+  const [contractGame, setContractGame] = useState<Contract>();
+  const [myAddress, setMyAddress] = useState<AddressLike>();
 
-  const contractTokenAddress = "0x7760Cd5127aE104A6Da7b8B7e75f7B0Bf92Cee74";
-  const contractGameAddress = "0x0d27772A83E9b622C00F548900f617Db75c98B54";
+  const contractTokenAddress = import.meta.env.VITE_TOKEN_ADDRESS;
+  const contractGameAddress = import.meta.env.VITE_GAME_ADDRESS;
 
   useEffect(() => {
     const loadWeb3 = async () => {
-      if (window.ethereum) {
-        setWeb3(new Web3(window.ethereum));
+      if (window.ethereum == null) {
+        console.log("MetaMask not installed; using read-only defaults");
+        setProvider(ethers.getDefaultProvider("goerli"));
       } else {
-        console.log(
-          "Non-Ethereum browser detected. You should consider trying MetaMask!"
-        );
+        const provider = new BrowserProvider(window.ethereum);
+        setProvider(provider);
+        setSigner(await provider.getSigner());
       }
     };
 
@@ -30,39 +38,69 @@ function App() {
   }, []);
 
   useEffect(() => {
+    // console.log("provider", provider);
+    // console.log("signer", signer);
+  }, [provider, signer]);
+
+  useEffect(() => {
     const loadContractToken = () => {
-      if (web3) {
-        setContractToken(new web3.eth.Contract(tokenABI, contractTokenAddress));
+      if (provider) {
+        const contract: Contract = new Contract(
+          contractTokenAddress,
+          tokenABI,
+          provider
+        );
+        setContractToken(contract);
+        // console.log("test token contract: ", contract);
       }
     };
     const loadContractGame = () => {
-      if (web3) {
-        setContractGame(new web3.eth.Contract(gameABI, contractGameAddress));
+      if (provider) {
+        const contract: Contract = new Contract(
+          contractGameAddress,
+          gameABI,
+          provider
+        );
+        setContractGame(contract);
+        // console.log("test game contract: ", contract);
       }
     };
 
-    if (!web3) return;
+    if (!provider) return;
     loadContractToken();
     loadContractGame();
-  }, [web3]);
+  }, [provider]);
 
   return (
-    <>
-      {web3 && contractToken && (
+    <div className='flex flex-col h-screen'>
+      {provider && contractToken && signer && (
         <Header
-          web3={web3}
+          provider={provider}
           contract={contractToken}
           setMyAddress={setMyAddress}
+          myAddress={myAddress}
+          signer={signer}
         />
       )}
-      {web3 && contractGame && myAddress && (
+      {provider && contractGame && contractToken && myAddress && signer && (
         <AppBody
           contractGame={contractGame}
-          web3={web3}
+          contractToken={contractToken}
+          provider={provider}
+          signer={signer}
           myAddress={myAddress}
         />
       )}
-    </>
+
+      <div className='flex-grow'></div>
+
+      {contractGame && contractToken && (
+        <div className='flex flex-col justify-center items-center border-t-[1px]'>
+          <p>Token Contract : {contractTokenAddress}</p>
+          <p>Game Contract : {contractGameAddress}</p>
+        </div>
+      )}
+    </div>
   );
 }
 

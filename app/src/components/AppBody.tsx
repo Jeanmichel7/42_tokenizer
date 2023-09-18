@@ -1,34 +1,35 @@
-import Web3 from "web3";
-import Contract from "web3-eth-contract";
-import { Address, ContractAbi } from "web3-types";
 import ZombiesAccount from "./zombies/ZombiesAccount";
 import { useEffect, useState } from "react";
 import { IZombies } from "../interfaces/IZombies";
+import { Contract, AddressLike, Provider, Signer } from "ethers";
+import OtherZombies from "./OtherZombies";
 
 interface AppBodyProps {
-  contractGame: Contract<ContractAbi>;
-  web3: Web3;
-  myAddress: Address;
+  contractGame: Contract;
+  provider: Provider;
+  myAddress: AddressLike;
+  signer: Signer;
+  contractToken: Contract;
 }
 
-const AppBody = ({ contractGame, web3, myAddress }: AppBodyProps) => {
+const AppBody = ({
+  contractGame,
+  contractToken,
+  provider,
+  myAddress,
+  signer,
+}: AppBodyProps) => {
   const [zombies, setZombies] = useState<IZombies[]>([]);
 
   useEffect(() => {
     const getZombies = async () => {
-      const accounts = await web3.eth.getAccounts();
-      const zombies: bigint[] = await contractGame.methods
-        .getZombiesByOwner(accounts[0])
-        .call();
-      console.log("zombies", zombies);
+      const zombies = (
+        await contractGame.getZombiesByOwner(myAddress)
+      ).toArray();
 
       const zombiesData = await Promise.all(
-        zombies.map(async (zombie) => {
-          // console.log("zomb: ", zombie);
-          const zombieDetails: IZombies = await contractGame.methods
-            .zombies(zombie)
-            .call();
-          console.log("ret", zombieDetails);
+        zombies.map(async (zombie: IZombies) => {
+          const zombieDetails: IZombies = await contractGame.zombies(zombie);
 
           return {
             id: zombie,
@@ -41,22 +42,29 @@ const AppBody = ({ contractGame, web3, myAddress }: AppBodyProps) => {
           };
         })
       );
-      console.log("zombies with names", zombiesData);
       setZombies(zombiesData);
     };
 
     getZombies();
-  }, [contractGame, web3.eth]);
+  }, [contractGame, myAddress, provider]);
 
-  console.log("contract game", contractGame);
   return (
     <div className='flex flex-col items-center justify-around'>
       <ZombiesAccount
         zombies={zombies}
         contractGame={contractGame}
+        contractToken={contractToken}
         myAddress={myAddress}
+        signer={signer}
       />
       {/* <FeedZombies /> */}
+      <OtherZombies
+        myZombies={zombies}
+        contractGame={contractGame}
+        contractToken={contractToken}
+        myAddress={myAddress}
+        signer={signer}
+      />
     </div>
   );
 };

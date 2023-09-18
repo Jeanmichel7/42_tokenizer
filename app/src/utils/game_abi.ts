@@ -155,6 +155,13 @@ export const gameABI = [
     type: "function",
   },
   {
+    inputs: [{ internalType: "uint256", name: "_zombieId", type: "uint256" }],
+    name: "feedHumain",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
     inputs: [
       { internalType: "uint256", name: "_zombieId", type: "uint256" },
       { internalType: "uint256", name: "_kittyId", type: "uint256" },
@@ -168,6 +175,20 @@ export const gameABI = [
     inputs: [{ internalType: "uint256", name: "tokenId", type: "uint256" }],
     name: "getApproved",
     outputs: [{ internalType: "address", name: "", type: "address" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "address", name: "_owner", type: "address" }],
+    name: "getRandomZombiesTarget",
+    outputs: [{ internalType: "uint256[]", name: "", type: "uint256[]" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "address", name: "_owner", type: "address" }],
+    name: "getRandomZombiesTargetTest",
+    outputs: [{ internalType: "uint256[]", name: "", type: "uint256[]" }],
     stateMutability: "view",
     type: "function",
   },

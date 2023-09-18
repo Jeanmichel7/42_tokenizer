@@ -1,91 +1,180 @@
-import Contract from "web3-eth-contract";
+import { AddressLike, Contract, Signer, parseEther } from "ethers";
 import { IZombies } from "../../interfaces/IZombies";
 import Button from "@mui/material/Button";
-import { Address, ContractAbi } from "web3-types";
+import { useState } from "react";
 
 interface ZombieAccountItemProps {
   zombie: IZombies;
-  contractGame: Contract<ContractAbi>;
-  myAddress: Address;
+  contractGame: Contract;
+  myAddress: AddressLike;
+  signer: Signer;
+  contractToken: Contract;
 }
 
 const ZombieAccountItem = ({
   zombie,
   contractGame,
+  contractToken,
   myAddress,
+  signer,
 }: ZombieAccountItemProps) => {
-  // const zombieStyles = {
-  //   head: `head-visible-${zombie.dna.toString().slice(0, 2)}`,
-  //   eye: `eye-visible-${zombie.dna.toString().slice(2, 4)}`,
-  //   shirt: `shirt-visible-${zombie.dna.toString().slice(4, 6)}`,
-  //   pants: `pants-visible-${zombie.dna.toString().slice(6, 8)}`,
-  //   shoes: `shoes-visible-${zombie.dna.toString().slice(8, 10)}`,
-  // };
+  const contractWithSigner = contractGame.connect(signer);
+  const contractTokenSigner = contractToken.connect(signer);
+  const readyDate = new Date(parseInt(zombie.readyTime) * 1000);
 
-  // const hueRotateFilter = (dnaSegment) => {
-  //   return `hue-rotate(${parseInt(dnaSegment, 10) * 3.6}deg)`;
-  // };
+  const [openEditName, setOpenEditName] = useState(false);
+  const [name, setName] = useState(zombie.name);
 
-  const handleAttack = async () => {
-    const ret = await contractGame.methods
-      .attack(0, 1)
-      .send({ from: myAddress, gas: "3000000" })
-      .on("transactionHash", (hash) => {
-        console.log("Transaction Hash:", hash);
-      })
-      .on("confirmation", (confirmationNumber, receipt) => {
-        console.log("Confirmation Number:", confirmationNumber);
-        console.log("Receipt:", receipt);
-      })
-      .on("receipt", (receipt) => {
-        console.log("Receipt:", receipt);
-      })
-      .on("error", (error, receipt) => {
-        console.log("Error:", error);
-        console.log("Receipt:", receipt);
-      });
-    console.log("attack", ret);
+  console.log("zombie : ", zombie, readyDate);
+
+  const handleEditName = async () => {
+    setOpenEditName(!openEditName);
+  };
+
+  const handleValidateChangeName = async (newName: string) => {
+    if (contractWithSigner === null) return;
+    try {
+      const ret = await contractWithSigner.changeName(zombie.id, newName);
+      console.log("change name ret", ret);
+      const receipt = await ret.wait();
+      console.log("Transaction Receipt:", receipt);
+    } catch (e) {
+      console.error("Error : ", e);
+    }
+  };
+
+  const handleSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+    handleValidateChangeName(name);
   };
 
   const handleFeed = async () => {
-    const ret = await contractGame.methods
-      .feedOnKitty(zombie.id, 0)
-      .send({ from: myAddress })
-      .on("transactionHash", (hash) => {
-        console.log("Transaction Hash:", hash);
-      })
-      .on("confirmation", (confirmationNumber, receipt) => {
-        console.log("Confirmation Number:", confirmationNumber);
-        console.log("Receipt:", receipt);
-      })
-      .on("receipt", (receipt) => {
-        console.log("Receipt:", receipt);
-      })
-      .on("error", (error, receipt) => {
-        console.log("Error:", error);
-        console.log("Receipt:", receipt);
+    if (contractWithSigner === null) return;
+    try {
+      const allowance = await contractToken.allowance(
+        myAddress,
+        import.meta.env.VITE_GAME_ADDRESS
+      );
+      console.log("Allowance: ", allowance.toString());
+
+      if (allowance.toString() === "0") {
+        const tx = await contractTokenSigner.approve(
+          import.meta.env.VITE_GAME_ADDRESS,
+          10 ** 13
+        );
+        console.log("tx approe: ", tx);
+        const receiptApprove = await tx.wait();
+        console.log("receipt: ", receiptApprove);
+      }
+
+      const ret = await contractWithSigner.feedHumain(zombie.id);
+      console.log("feed ret", ret);
+
+      // Attente de la réception
+      const receipt = await ret.wait();
+      console.log("Transaction Receipt:", receipt);
+    } catch (e) {
+      console.error("Error : ", e);
+    }
+  };
+
+  const handleLevelUp = async () => {
+    if (contractWithSigner === null || contractTokenSigner == null) return;
+    try {
+      const userConfirmed = window.confirm(
+        "Purchase 1 FTCZ for 0.0001 ETH, are you sure you want to continue with Metamask ?"
+      );
+      if (!userConfirmed) {
+        return;
+      }
+
+      console.log("contract : ", contractWithSigner);
+
+      const allowance = await contractToken.allowance(
+        myAddress,
+        import.meta.env.VITE_GAME_ADDRESS
+      );
+      console.log("Allowance: ", allowance.toString());
+
+      if (allowance.toString() === "0") {
+        const tx = await contractTokenSigner.approve(
+          import.meta.env.VITE_GAME_ADDRESS,
+          10 ** 13
+        );
+        console.log("tx approe: ", tx);
+        const receiptApprove = await tx.wait();
+        console.log("receipt: ", receiptApprove);
+      }
+
+      const ret = await contractWithSigner.levelUp(BigInt(zombie.id));
+      console.log("levelup ret", ret);
+      const receipt = await ret.wait();
+      console.log("Transaction Receipt:", receipt);
+    } catch (e) {
+      console.error("Error : ", e);
+    }
+  };
+
+  const handleBuy = async () => {
+    if (contractWithSigner === null) return;
+    try {
+      const ret = await contractWithSigner.createOneToken({
+        value: parseEther("0.0001"),
       });
-    console.log("feed", ret);
+      // console.log("ret", ret);
+    } catch (e) {
+      console.error("error", e);
+    }
   };
 
   return (
     <div
-      className='flex flex-col items-center justify-around
+      className='flex flex-col justify-around
       border-2 border-gray-700 rounded-lg p-2 m-2'
     >
-      <h4 className='text-lg font-bold'>{zombie.name}</h4>
+      <h4 className='text-lg font-bold text-center'>{zombie.name}</h4>
+      <p>id : {parseInt(zombie.id)}</p>
       <p>Level: {parseInt(zombie.level)}</p>
       <p>DNA: {parseInt(zombie.dna)}</p>
       {/* <p>Level: {zombie.level}</p> */}
       <p>Win: {parseInt(zombie.winCount)}</p>
       <p>Loss: {parseInt(zombie.lossCount)}</p>
       <p>Ready to eat : {parseInt(zombie.readyTime)}</p>
-      <Button variant='outlined' onClick={handleFeed}>
-        Feed
-      </Button>
-      <Button variant='outlined' onClick={handleAttack}>
-        Attack
-      </Button>
+      <p> Next eat after : {readyDate.toLocaleString()}</p>
+      <div className='mt-2 text-center'>
+        <Button variant='outlined' onClick={handleEditName}>
+          Edit Name
+        </Button>
+        <Button variant='outlined' onClick={handleFeed}>
+          Feed
+        </Button>
+        <Button variant='outlined' onClick={handleLevelUp}>
+          Level up
+        </Button>
+      </div>
+      {openEditName && (
+        <div className='mt-5'>
+          {zombie.level < 3 ? (
+            <div className='flex flex-col'>
+              <p className='text-red-500 text-center'>
+                Require lvl 3 to change name
+              </p>
+              <Button variant='outlined' color='warning' onClick={handleBuy}>
+                Buy 1 FTCZ
+              </Button>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit}>
+              <input
+                type='text'
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+              <button type='submit'>Change Name</button>
+            </form>
+          )}
+        </div>
+      )}
     </div>
   );
 

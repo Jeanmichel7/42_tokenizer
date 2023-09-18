@@ -73,4 +73,44 @@ contract ZombieHelper is ZombieFeeding {
     return result;
   }
 
+  function getRandomZombiesTarget(address _owner) external view returns(uint[] memory) {
+    require(zombies.length > 0, "No zombies found");
+    uint[] memory result = new uint[](5);
+    
+    for (uint i = 0; i < 5; i++) {
+      uint rand = uint(keccak256(abi.encodePacked(block.timestamp, msg.sender, i))) % zombies.length;
+
+      if (zombieToOwner[rand] != _owner) {
+        for(uint j=0; j < i; j++) {
+          if (result[j] == rand) {
+            // i--;
+            break;
+          }
+        }
+        result[i] = rand;
+      }
+    }
+    return result;
+  }
+
+  function getRandomZombiesTargetTest(address _owner) external view returns(uint[] memory) {
+    require(zombies.length > 0, "No zombies found");
+    uint randNonce = 0;
+    uint[] memory result = new uint[](5);
+    
+    for (uint i = 0; i < 5; i++) {
+      uint rand = uint(keccak256(abi.encodePacked(block.timestamp, msg.sender, randNonce))) % zombies.length;
+      randNonce++;
+
+      if (zombieToOwner[rand] == _owner) {  // add check already exist in result liste
+        i--;
+        continue;
+      }
+
+      // ajoute le zombie dans le tableau
+      result[i] = rand;
+    }
+    return result;
+  }
+
 }

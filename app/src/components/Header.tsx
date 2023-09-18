@@ -1,56 +1,74 @@
 import { useEffect, useState } from "react";
-import Web3, { ContractAbi, Contract, Address } from "web3";
 import CurrencyFrancIcon from "@mui/icons-material/CurrencyFranc";
-import CurrencyBitcoinIcon from "@mui/icons-material/CurrencyBitcoin";
 import Button from "@mui/material/Button";
+import {
+  Contract,
+  Provider,
+  formatEther,
+  parseEther,
+  AddressLike,
+  Signer,
+} from "ethers";
 
 interface HeaderProps {
-  web3: Web3;
-  contract: Contract<ContractAbi>;
-  setMyAddress: React.Dispatch<React.SetStateAction<Address | undefined>>;
+  provider: Provider;
+  contract: Contract;
+  setMyAddress: React.Dispatch<React.SetStateAction<AddressLike | undefined>>;
+  myAddress: AddressLike | undefined;
+  signer: Signer;
 }
 
-const Header = ({ web3, contract, setMyAddress }: HeaderProps) => {
+const Header = ({
+  provider,
+  contract,
+  setMyAddress,
+  myAddress,
+  signer,
+}: HeaderProps) => {
   const [isConnected, setIsConnected] = useState<boolean>(false);
   const [ethBalance, setEthBalance] = useState<string>("0");
   const [ftczBalance, setFtczBalance] = useState<string>("0");
+  const contractWithSigner = contract.connect(signer);
 
   useEffect(() => {
     const getEthBalance = async () => {
-      const accounts = await web3.eth.getAccounts();
-      const balance = await web3.eth.getBalance(accounts[0]);
-      const ethBalance = web3.utils.fromWei(balance, "ether");
-      setEthBalance(ethBalance);
+      if (!myAddress) return;
+      const balance = await provider.getBalance(myAddress);
+      setEthBalance(formatEther(balance));
     };
 
     const getFTCZBalance = async () => {
-      if (contract === null) return;
-      try {
-        const addr: Address[] = await web3.eth.getAccounts();
-        setMyAddress(addr[0]);
-        const balance: bigint = await contract.methods
-          .balanceOf(addr[0])
-          .call();
-        setFtczBalance(web3.utils.fromWei(balance, "ether"));
-      } catch (e) {
-        console.log("error", e);
-      }
+      if (!myAddress) return;
+      const balance = await contract.getBalance(myAddress);
+      setFtczBalance(formatEther(balance));
     };
 
     getEthBalance();
     getFTCZBalance();
-  }, [contract, web3.eth, web3.utils]);
+  }, [contract, myAddress, provider]);
 
   const handleConnect = async () => {
     try {
       const test = await window.ethereum.request({
         method: "eth_requestAccounts",
       });
-      console.log("ret request account", test);
+      // console.log("ret request account", test);
       setIsConnected(true);
-      // setMyAdress(window.ethereum.selectedAddress);
+      setMyAddress(test[0]);
     } catch (error) {
       console.error("L'utilisateur a refusé l'accès à MetaMask");
+    }
+  };
+
+  const handleBuy = async () => {
+    if (contractWithSigner === null) return;
+    try {
+      const ret = await contractWithSigner.createOneToken({
+        value: parseEther("0.0001"),
+      });
+      // console.log("ret", ret);
+    } catch (e) {
+      console.error("error", e);
     }
   };
 
@@ -60,17 +78,22 @@ const Header = ({ web3, contract, setMyAddress }: HeaderProps) => {
     border-gray-200 border-b-2'
     >
       <p className='font-bold text-lg pl-2'>Tokenizer</p>
-      <a href='/' className='text-white'>
-        Game
-      </a>
+
       {isConnected ? (
-        <div className='flex'>
-          <p>
-            {parseFloat(ethBalance).toFixed(4)}
-            <CurrencyBitcoinIcon />
-          </p>
+        <div className='flex justify-center items-center'>
+          <Button variant='outlined' color='warning' onClick={handleBuy}>
+            Buy 1 FTCZ
+          </Button>
+          <div className='flex pl-4'>
+            <p>{parseFloat(ethBalance).toFixed(6)}</p>
+            <img
+              src='https://upload.wikimedia.org/wikipedia/commons/0/05/Ethereum_logo_2014.svg'
+              alt='eth'
+              className='w-6 h-6'
+            />
+          </div>
           <p className='pl-4'>
-            {parseFloat(ftczBalance).toFixed(4)}
+            {parseFloat(ftczBalance).toFixed(6)}
             <CurrencyFrancIcon />
           </p>
         </div>
