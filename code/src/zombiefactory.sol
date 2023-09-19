@@ -1,15 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.19;
 
-import { ERC20 } from "openzeppelin-contracts/contracts/token/ERC20/ERC20.sol";
 import { Ownable } from "openzeppelin-contracts/contracts/access/Ownable.sol";
 
 contract ZombieFactory is Ownable {
   event NewZombie(uint zombieId, string name, uint dna);
-
-  // constructor(string memory name, string memory symbol) ERC20(name, symbol) {
-  //   _mint(msg.sender, 42 * (10 ** uint(decimals())));
-  // }
 
   uint dnaDigits = 16;
   uint dnaModulus = 10 ** dnaDigits;

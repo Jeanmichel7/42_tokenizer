@@ -67,6 +67,13 @@ export const tokenABI = [
     type: "event",
   },
   {
+    inputs: [],
+    name: "RATE",
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
     inputs: [
       { internalType: "address", name: "owner", type: "address" },
       { internalType: "address", name: "spender", type: "address" },
@@ -91,6 +98,13 @@ export const tokenABI = [
     name: "balanceOf",
     outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
     stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "buyTokens",
+    outputs: [],
+    stateMutability: "payable",
     type: "function",
   },
   {

@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import CurrencyFrancIcon from "@mui/icons-material/CurrencyFranc";
 import Button from "@mui/material/Button";
+import LogoutIcon from "@mui/icons-material/Logout";
 import {
   Contract,
   Provider,
@@ -9,13 +10,18 @@ import {
   AddressLike,
   Signer,
 } from "ethers";
+import { IconButton } from "@mui/material";
 
 interface HeaderProps {
-  provider: Provider;
-  contract: Contract;
-  setMyAddress: React.Dispatch<React.SetStateAction<AddressLike | undefined>>;
-  myAddress: AddressLike | undefined;
-  signer: Signer;
+  provider: Provider | null;
+  contract: Contract | null;
+  setMyAddress: React.Dispatch<React.SetStateAction<AddressLike | null>>;
+  myAddress: AddressLike | null;
+  signer: Signer | null;
+  currentPage: string;
+  setCurrentPage: React.Dispatch<React.SetStateAction<string>>;
+  ethBalance: string;
+  ftczBalance: string;
 }
 
 const Header = ({
@@ -24,53 +30,114 @@ const Header = ({
   setMyAddress,
   myAddress,
   signer,
+  currentPage,
+  setCurrentPage,
+  ethBalance,
+  ftczBalance,
 }: HeaderProps) => {
   const [isConnected, setIsConnected] = useState<boolean>(false);
-  const [ethBalance, setEthBalance] = useState<string>("0");
-  const [ftczBalance, setFtczBalance] = useState<string>("0");
-  const contractWithSigner = contract.connect(signer);
+  // const [ethBalance, setEthBalance] = useState<string>("0");
+  // const [ftczBalance, setFtczBalance] = useState<string>("0");
+  // const [contractWithSigner, setContractWithSigner] = useState<Contract | null>(
+  //   null
+  // );
+  const [error, setError] = useState<string>("");
+
+  // useConnection({
+  //   provider,
+  //   contract,
+  //   signer,
+  //   setContractWithSigner,
+  //   setMyAddress,
+  //   setIsConnected,
+  //   setError,
+  // });
+
+  // useEffect(() => {
+  //   if (contract && signer) {
+  //     const contractWithSigner = contract.connect(signer);
+  //     setContractWithSigner(contractWithSigner as unknown as Contract);
+  //   }
+  // }, [contract, signer]);
+
+  const handleConnection = useCallback(async () => {
+    if (window.ethereum) {
+      try {
+        const accounts = await window.ethereum.request({
+          method: "eth_accounts",
+        });
+        setIsConnected(accounts.length > 0);
+        if (accounts.length > 0) {
+          setMyAddress(accounts[0]);
+        }
+      } catch (error) {
+        console.error("Erreur lors de la vérification de la connexion", error);
+      }
+    } else {
+      setError("Install Metamask Extension");
+    }
+  }, []);
+
+  const handleNetworkChange = async () => {
+    const chainId = await window.ethereum.request({ method: "eth_chainId" });
+    if (chainId !== "0x5") {
+      // 0x5 is the chain ID for Goerli
+      try {
+        await window.ethereum.request({
+          method: "wallet_switchEthereumChain",
+          params: [{ chainId: "0x5" }], // 0x5 is the chain ID for Goerli
+        });
+      } catch (switchError) {
+        console.log("error", switchError);
+        if (switchError.code === 4902) {
+          try {
+            await window.ethereum.request({
+              method: "wallet_addEthereumChain",
+              params: [
+                {
+                  chainId: "0x5",
+                  chainName: "Goerli",
+                  nativeCurrency: {
+                    name: "ETH",
+                    symbol: "ETH",
+                    decimals: 18,
+                  },
+                  rpcUrls: [
+                    "https://goerli.infura.io/v3/YOUR_INFURA_PROJECT_ID",
+                  ],
+                  blockExplorerUrls: ["https://goerli.etherscan.io/"],
+                },
+              ],
+            });
+          } catch (addError) {
+            console.error(addError);
+          }
+        } else {
+          console.error(switchError);
+        }
+      }
+    }
+  };
+
+  const handleDisconnect = () => {
+    setIsConnected(false);
+    setMyAddress(null);
+  };
 
   useEffect(() => {
-    const getEthBalance = async () => {
-      if (!myAddress) return;
-      const balance = await provider.getBalance(myAddress);
-      setEthBalance(formatEther(balance));
-    };
+    if (window.ethereum) {
+      handleConnection();
+      window.ethereum.on("accountsChanged", handleConnection);
+      window.ethereum.on("chainChanged", handleNetworkChange);
 
-    const getFTCZBalance = async () => {
-      if (!myAddress) return;
-      const balance = await contract.getBalance(myAddress);
-      setFtczBalance(formatEther(balance));
-    };
-
-    getEthBalance();
-    getFTCZBalance();
-  }, [contract, myAddress, provider]);
-
-  const handleConnect = async () => {
-    try {
-      const test = await window.ethereum.request({
-        method: "eth_requestAccounts",
-      });
-      // console.log("ret request account", test);
-      setIsConnected(true);
-      setMyAddress(test[0]);
-    } catch (error) {
-      console.error("L'utilisateur a refusé l'accès à MetaMask");
+      return () => {
+        if (window.ethereum) {
+          window.ethereum.removeListener("accountsChanged", handleConnection);
+          window.ethereum.removeListener("chainChanged", handleNetworkChange);
+        }
+      };
     }
-  };
-
-  const handleBuy = async () => {
-    if (contractWithSigner === null) return;
-    try {
-      const ret = await contractWithSigner.createOneToken({
-        value: parseEther("0.0001"),
-      });
-      // console.log("ret", ret);
-    } catch (e) {
-      console.error("error", e);
-    }
-  };
+  }, [handleConnection]);
 
   return (
     <div
@@ -79,11 +146,18 @@ const Header = ({
     >
       <p className='font-bold text-lg pl-2'>Tokenizer</p>
 
+      {error && <p className='text-red-500'>{error}</p>}
+      <Button
+        variant='outlined'
+        color='warning'
+        onClick={() =>
+          setCurrentPage((prev) => (prev == "buy" ? "home" : "buy"))
+        }
+      >
+        {currentPage == "home" ? "Token" : "Game"}
+      </Button>
       {isConnected ? (
         <div className='flex justify-center items-center'>
-          <Button variant='outlined' color='warning' onClick={handleBuy}>
-            Buy 1 FTCZ
-          </Button>
           <div className='flex pl-4'>
             <p>{parseFloat(ethBalance).toFixed(6)}</p>
             <img
@@ -93,12 +167,20 @@ const Header = ({
             />
           </div>
           <p className='pl-4'>
-            {parseFloat(ftczBalance).toFixed(6)}
+            {parseFloat(ftczBalance).toFixed(3)}
             <CurrencyFrancIcon />
           </p>
+          <IconButton
+            size='large'
+            onClick={handleDisconnect}
+            color='warning'
+            className='pl-4'
+          >
+            <LogoutIcon />
+          </IconButton>
         </div>
       ) : (
-        <Button variant='outlined' onClick={handleConnect}>
+        <Button variant='outlined' onClick={handleConnection}>
           Connect Wallet
         </Button>
       )}

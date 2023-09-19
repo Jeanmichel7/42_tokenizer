@@ -14,6 +14,7 @@ forge create \
   --constructor-args $TOKEN_NAME $TOKEN_SYMBOL \
   --etherscan-api-key=$ETHERSCAN_API_KEY \
   --verify \
+  --delay 10 \
   | tee tmp_log_deploy_token.txt
 
 tokenAddress=$(grep -oP '(?<=Deployed to: )\S+' tmp_log_deploy_token.txt)

@@ -14,6 +14,7 @@ forge create \
   --private-key=$PRIVATE_KEY \
   --etherscan-api-key=$ETHERSCAN_API_KEY \
   --verify \
+  --delay 10 \
   | tee tmp_log_deploy_game.txt
 
 gameAddress=$(grep -oP '(?<=Deployed to: )\S+' tmp_log_deploy_game.txt)

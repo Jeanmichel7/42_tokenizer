@@ -7,7 +7,7 @@ contract ZombieAttack is ZombieHelper {
   uint randNonce = 0;
   uint attackVictoryProbability = 70;
 
-  constructor(address tokenAddress) ZombieHelper(tokenAddress) {
+  constructor(address tokenAddress) ZombieHelper(tokenAddress){
   }
 
   function randMod(uint _modulus) internal returns(uint) {

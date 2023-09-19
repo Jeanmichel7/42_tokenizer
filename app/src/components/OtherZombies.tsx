@@ -46,7 +46,7 @@ const OtherZombies = ({
         })
       );
       setZombies(zombiesData);
-      console.log("other zombies : ", zombiesData);
+      // console.log("other zombies : ", zombiesData);
     };
 
     getZombies();

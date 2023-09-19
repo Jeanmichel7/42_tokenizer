@@ -6,7 +6,9 @@ import "./Token42.sol";
 
 contract ZombieHelper is ZombieFeeding {
 
-  uint levelUpFee = 10 ** 13;
+  uint changeNameFee = 10 ** 17;
+  uint levelUpFee = 10 ** 18;
+  uint changeDnaFee = 10 ** 19;
   Token42 private token;
 
   constructor(address tokenAddress) {
@@ -54,10 +56,28 @@ contract ZombieHelper is ZombieFeeding {
   }
 
   function changeName(uint _zombieId, string memory _newName) external aboveLevel(2, _zombieId) onlyOwnerOf(_zombieId) {
+    require(
+      token.allowance(msg.sender, address(this)) >= changeNameFee,
+      "Token allowance not sufficient"
+    );
+
+    require(
+      token.transferFrom(msg.sender, address(this), changeNameFee),
+      "Token transfer failed"
+    );
     zombies[_zombieId].name = _newName;
   }
 
   function changeDna(uint _zombieId, uint _newDna) external aboveLevel(20, _zombieId) onlyOwnerOf(_zombieId) {
+    require(
+      token.allowance(msg.sender, address(this)) >= changeDnaFee,
+      "Token allowance not sufficient"
+    );
+
+    require(
+      token.transferFrom(msg.sender, address(this), changeDnaFee),
+      "Token transfer failed"
+    );
     zombies[_zombieId].dna = _newDna;
   }
 

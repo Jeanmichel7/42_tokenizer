@@ -1,47 +1,118 @@
-import { AddressLike, Contract, Signer, parseEther } from "ethers";
+import { AddressLike, Contract, Signer } from "ethers";
 import { IZombies } from "../../interfaces/IZombies";
 import Button from "@mui/material/Button";
 import { useState } from "react";
 import ZombieAvatar from "./ZombieAvatar";
+import { CircularProgress } from "@mui/material";
 
 interface ZombieAccountItemProps {
   zombie: IZombies;
+  getZombies: () => Promise<void>;
   contractGame: Contract;
   myAddress: AddressLike;
   signer: Signer;
   contractToken: Contract;
+  setCurrentPage: React.Dispatch<React.SetStateAction<string>>;
+  getEthBalance: () => Promise<void>;
+  getFTCZBalance: () => Promise<void>;
 }
 
 const ZombieAccountItem = ({
   zombie,
+  getZombies,
   contractGame,
   contractToken,
   myAddress,
   signer,
+  setCurrentPage,
+  getEthBalance,
+  getFTCZBalance,
 }: ZombieAccountItemProps) => {
   const contractWithSigner = contractGame.connect(signer);
   const contractTokenSigner = contractToken.connect(signer);
-  const readyDate = new Date(parseInt(zombie.readyTime) * 1000);
+  const readyDate = new Date(parseInt(zombie.readyTime.toString()) * 1000);
+
+  const [isLoadingEditName, setIsLoadingEditName] = useState(false);
+  const [isLoadingEditDna, setIsLoadingEditDna] = useState(false);
+  const [isLoadingFeed, setIsLoadingFeed] = useState(false);
+  const [isLoadingLvlUp, setIsLoadingLvlUp] = useState(false);
+
+  const changeNameFee = 10 ** 17;
+  const levelUpFee = 10 ** 18;
+  const changeDnaFee = 10 ** 19;
 
   const [openEditName, setOpenEditName] = useState(false);
+  const [openEditDna, setOpenEditDna] = useState(false);
   const [name, setName] = useState(zombie.name);
-
-  console.log("zombie : ", zombie, readyDate);
+  const [dna, setDna] = useState<string>(zombie.dna.toString());
+  const [txId, setTxId] = useState<string>("");
 
   const handleEditName = async () => {
     setOpenEditName(!openEditName);
   };
 
+  const handleEditDna = async () => {
+    setOpenEditDna(!openEditDna);
+  };
+
   const handleValidateChangeName = async (newName: string) => {
     if (contractWithSigner === null) return;
+    setIsLoadingEditName(true);
     try {
+      const allowance = await contractToken.allowance(
+        myAddress,
+        import.meta.env.VITE_GAME_ADDRESS
+      );
+      if (allowance < changeNameFee) {
+        const tx = await contractTokenSigner.approve(
+          import.meta.env.VITE_GAME_ADDRESS,
+          10 ** 13
+        );
+        await tx.wait();
+      }
+
       const ret = await contractWithSigner.changeName(zombie.id, newName);
-      console.log("change name ret", ret);
-      const receipt = await ret.wait();
-      console.log("Transaction Receipt:", receipt);
+      setTxId(ret.hash);
+
+      await ret.wait();
+      setTxId("");
+      getZombies();
+      getEthBalance();
+      getFTCZBalance();
     } catch (e) {
       console.error("Error : ", e);
     }
+    setIsLoadingEditName(false);
+  };
+
+  const handleValidateChangeDna = async (newDna: string) => {
+    if (contractWithSigner === null) return;
+    setIsLoadingEditDna(true);
+    try {
+      const allowance = await contractToken.allowance(
+        myAddress,
+        import.meta.env.VITE_GAME_ADDRESS
+      );
+      if (allowance < changeDnaFee) {
+        const tx = await contractTokenSigner.approve(
+          import.meta.env.VITE_GAME_ADDRESS,
+          10 ** 13
+        );
+        await tx.wait();
+      }
+
+      const ret = await contractWithSigner.changeDna(zombie.id, newDna);
+      setTxId(ret.hash);
+
+      await ret.wait();
+      setTxId("");
+      getZombies();
+      getEthBalance();
+      getFTCZBalance();
+    } catch (e) {
+      console.error("Error : ", e);
+    }
+    setIsLoadingEditDna(false);
   };
 
   const handleSubmit = (event: React.FormEvent) => {
@@ -49,83 +120,69 @@ const ZombieAccountItem = ({
     handleValidateChangeName(name);
   };
 
+  const handleSubmitEditDna = (event: React.FormEvent) => {
+    event.preventDefault();
+    handleValidateChangeDna(dna);
+  };
+
   const handleFeed = async () => {
     if (contractWithSigner === null) return;
+    setIsLoadingFeed(true);
     try {
       const allowance = await contractToken.allowance(
         myAddress,
         import.meta.env.VITE_GAME_ADDRESS
       );
-      console.log("Allowance: ", allowance.toString());
-
       if (allowance.toString() === "0") {
         const tx = await contractTokenSigner.approve(
           import.meta.env.VITE_GAME_ADDRESS,
           10 ** 13
         );
-        console.log("tx approe: ", tx);
-        const receiptApprove = await tx.wait();
-        console.log("receipt: ", receiptApprove);
+        await tx.wait();
       }
 
       const ret = await contractWithSigner.feedHumain(zombie.id);
-      console.log("feed ret", ret);
-
-      // Attente de la réception
-      const receipt = await ret.wait();
-      console.log("Transaction Receipt:", receipt);
+      setTxId(ret.hash);
+      await ret.wait();
+      setTxId("");
+      getZombies();
+      getEthBalance();
+      getFTCZBalance();
     } catch (e) {
       console.error("Error : ", e);
     }
+    setIsLoadingFeed(false);
   };
 
   const handleLevelUp = async () => {
     if (contractWithSigner === null || contractTokenSigner == null) return;
+    setIsLoadingLvlUp(true);
     try {
-      const userConfirmed = window.confirm(
-        "Purchase 1 FTCZ for 0.0001 ETH, are you sure you want to continue with Metamask ?"
-      );
-      if (!userConfirmed) {
-        return;
-      }
-
-      console.log("contract : ", contractWithSigner);
-
       const allowance = await contractToken.allowance(
         myAddress,
         import.meta.env.VITE_GAME_ADDRESS
       );
-      console.log("Allowance: ", allowance.toString());
-
-      if (allowance.toString() === "0") {
+      if (allowance < BigInt(levelUpFee)) {
         const tx = await contractTokenSigner.approve(
           import.meta.env.VITE_GAME_ADDRESS,
           10 ** 13
         );
-        console.log("tx approe: ", tx);
-        const receiptApprove = await tx.wait();
-        console.log("receipt: ", receiptApprove);
+        console.log("wait allowance");
+        await tx.wait();
       }
 
       const ret = await contractWithSigner.levelUp(BigInt(zombie.id));
-      console.log("levelup ret", ret);
-      const receipt = await ret.wait();
-      console.log("Transaction Receipt:", receipt);
+      setTxId(ret.hash);
+
+      await ret.wait();
+      getZombies();
+      setTxId("");
+      getEthBalance();
+      getFTCZBalance();
     } catch (e) {
       console.error("Error : ", e);
     }
-  };
-
-  const handleBuy = async () => {
-    if (contractWithSigner === null) return;
-    try {
-      const ret = await contractWithSigner.createOneToken({
-        value: parseEther("0.0001"),
-      });
-      // console.log("ret", ret);
-    } catch (e) {
-      console.error("error", e);
-    }
+    setIsLoadingLvlUp(false);
   };
 
   return (
@@ -134,26 +191,45 @@ const ZombieAccountItem = ({
       border-2 border-gray-700 rounded-lg p-2 m-2'
     >
       <h4 className='text-lg font-bold text-center'>{zombie.name}</h4>
-      <p>Level: {parseInt(zombie.level)}</p>
-      <p>DNA: {parseInt(zombie.dna)}</p>
-      <p>id : {parseInt(zombie.id)}</p>
+      <p>Level: {zombie.level.toString()}</p>
+      <p>DNA: {zombie.dna.toString()}</p>
+      <p>id : {zombie.id.toString()}</p>
       <div className='flex justify-center h-[150px]'>
         <ZombieAvatar zombieDna={zombie.dna} />
       </div>
-      <p className='text-center'>Win: {parseInt(zombie.winCount)}</p>
-      <p className='text-center'>Loss: {parseInt(zombie.lossCount)}</p>
+      <p className='text-center'>Win: {zombie.winCount.toString()}</p>
+      <p className='text-center'>Loss: {zombie.lossCount.toString()}</p>
       <p className='text-center'> next eat : {readyDate.toLocaleString()}</p>
       <div className='mt-2 text-center'>
         <Button variant='outlined' onClick={handleEditName}>
           Edit Name
+          {isLoadingEditName && <CircularProgress size='15px' />}
+        </Button>
+        <Button variant='outlined' onClick={handleEditDna}>
+          Edit Dna
+          {isLoadingEditDna && <CircularProgress size='15px' />}
         </Button>
         <Button variant='outlined' onClick={handleFeed}>
           Feed
+          {isLoadingFeed && <CircularProgress size='15px' />}
         </Button>
         <Button variant='outlined' onClick={handleLevelUp}>
           Level up
+          {isLoadingLvlUp && <CircularProgress size='15px' />}
         </Button>
       </div>
+      {txId && (
+        <div className='flex flex-col justify-center items-center mb-5'>
+          <p>View on Etherscan :</p>
+          <a
+            href={"https://goerli.etherscan.io/tx/" + txId}
+            target='_blank'
+            rel='noopener noreferrer'
+          >
+            https://goerli.etherscan.io/tx/{txId}
+          </a>
+        </div>
+      )}
       {openEditName && (
         <div className='mt-5'>
           {zombie.level < 3 ? (
@@ -161,8 +237,14 @@ const ZombieAccountItem = ({
               <p className='text-red-500 text-center'>
                 Require lvl 3 to change name
               </p>
-              <Button variant='outlined' color='warning' onClick={handleBuy}>
-                Buy 1 FTCZ
+              <Button
+                variant='outlined'
+                color='warning'
+                onClick={() => {
+                  setCurrentPage("buy");
+                }}
+              >
+                Buy FTCZ
               </Button>
             </div>
           ) : (
@@ -171,6 +253,35 @@ const ZombieAccountItem = ({
                 type='text'
                 value={name}
                 onChange={(e) => setName(e.target.value)}
+              />
+              <button type='submit'>Change Name</button>
+            </form>
+          )}
+        </div>
+      )}
+      {openEditDna && (
+        <div className='mt-5'>
+          {zombie.level < 20 ? (
+            <div className='flex flex-col'>
+              <p className='text-red-500 text-center'>
+                Require lvl 20 to change name
+              </p>
+              <Button
+                variant='outlined'
+                color='warning'
+                onClick={() => {
+                  setCurrentPage("buy");
+                }}
+              >
+                Buy FTCZ
+              </Button>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmitEditDna}>
+              <input
+                type='text'
+                value={name}
+                onChange={(e) => setDna(e.target.value)}
               />
               <button type='submit'>Change Name</button>
             </form>

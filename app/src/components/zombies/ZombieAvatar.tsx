@@ -37,7 +37,7 @@ const shirtImages = [
 ];
 
 const ZombieAvatar = ({ zombieDna }: ZombieAvatarProps) => {
-  console.log("zombieAdn", zombieDna);
+  // console.log("zombieAdn", zombieDna);
 
   // Chaque partie de l'ADN affectera une partie différente du zombie
   const headDna = parseInt(zombieDna.toString().slice(0, 2), 10);

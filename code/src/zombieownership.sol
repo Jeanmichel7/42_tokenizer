@@ -10,6 +10,6 @@ contract ZombieOwnership is ZombieAttack, ERC721 {
   
   Token42 private token;
 
-  constructor(address tokenAddress) ZombieAttack(tokenAddress) ERC721("ZombieTokenCollectopm", "ZMBC") {
+  constructor(address tokenAddress) ZombieAttack(tokenAddress) ERC721("ZombieNFT", "ZMBC") {
   }
 }

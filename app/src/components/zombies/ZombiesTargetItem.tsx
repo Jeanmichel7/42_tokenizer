@@ -22,17 +22,6 @@ const ZombiesTargetItems = ({
 }: ZombieAccountItemProps) => {
   const contractWithSigner = contractGame.connect(signer);
   const contractTokenSigner = contractToken.connect(signer);
-  // const zombieStyles = {
-  //   head: `head-visible-${zombie.dna.toString().slice(0, 2)}`,
-  //   eye: `eye-visible-${zombie.dna.toString().slice(2, 4)}`,
-  //   shirt: `shirt-visible-${zombie.dna.toString().slice(4, 6)}`,
-  //   pants: `pants-visible-${zombie.dna.toString().slice(6, 8)}`,
-  //   shoes: `shoes-visible-${zombie.dna.toString().slice(8, 10)}`,
-  // };
-
-  // const hueRotateFilter = (dnaSegment) => {
-  //   return `hue-rotate(${parseInt(dnaSegment, 10) * 3.6}deg)`;
-  // };
 
   const handleAttack = async () => {
     if (contractWithSigner === null) return;
@@ -41,20 +30,17 @@ const ZombiesTargetItems = ({
         myAddress,
         import.meta.env.VITE_GAME_ADDRESS
       );
-      console.log("Allowance: ", allowance.toString());
 
       if (allowance.toString() === "0") {
         const tx = await contractTokenSigner.approve(
           import.meta.env.VITE_GAME_ADDRESS,
           10 ** 13
         );
-        console.log("tx approe: ", tx);
-        const receiptApprove = await tx.wait();
-        console.log("receipt: ", receiptApprove);
+        await tx.wait();
       }
 
       const ret = await contractWithSigner.attack(myZombies[0].id, zombie.id);
-      console.log("attack", ret);
+      await ret.wait();
     } catch (e) {
       console.error("Error : ", e);
     }
@@ -68,16 +54,16 @@ const ZombiesTargetItems = ({
       <h4 className='text-lg font-bold'>
         {zombie.name}
         <span className='text-sm font-medium'>
-          lvl {parseInt(zombie.level)}
+          lvl {zombie.level.toString()}
         </span>
       </h4>
       {/* <p>Level: {parseInt(zombie.level)}</p> */}
-      <p>id : {parseInt(zombie.id)}</p>
+      <p>id : {zombie.id.toString()}</p>
       <div className='h-[150px]'>
         <ZombieAvatar zombieDna={zombie.dna} />
       </div>
-      <p>Win: {parseInt(zombie.winCount)}</p>
-      <p>Loss: {parseInt(zombie.lossCount)}</p>
+      <p>Win: {zombie.winCount.toString()}</p>
+      <p>Loss: {zombie.lossCount.toString()}</p>
       <Button variant='outlined' onClick={handleAttack}>
         Attack
       </Button>
