@@ -1,6 +1,7 @@
 import { AddressLike, Contract, Signer } from "ethers";
 import { IZombies } from "../../interfaces/IZombies";
 import Button from "@mui/material/Button";
+import ZombieAvatar from "./ZombieAvatar";
 
 interface ZombieAccountItemProps {
   zombie: IZombies;
@@ -64,9 +65,17 @@ const ZombiesTargetItems = ({
       className='flex flex-col items-center justify-around
       border-2 border-gray-700 rounded-lg p-2 m-2'
     >
-      <h4 className='text-lg font-bold'>{zombie.name}</h4>
+      <h4 className='text-lg font-bold'>
+        {zombie.name}
+        <span className='text-sm font-medium'>
+          lvl {parseInt(zombie.level)}
+        </span>
+      </h4>
+      {/* <p>Level: {parseInt(zombie.level)}</p> */}
       <p>id : {parseInt(zombie.id)}</p>
-      <p>Level: {parseInt(zombie.level)}</p>
+      <div className='h-[150px]'>
+        <ZombieAvatar zombieDna={zombie.dna} />
+      </div>
       <p>Win: {parseInt(zombie.winCount)}</p>
       <p>Loss: {parseInt(zombie.lossCount)}</p>
       <Button variant='outlined' onClick={handleAttack}>

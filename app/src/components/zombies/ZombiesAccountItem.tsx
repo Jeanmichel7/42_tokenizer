@@ -2,6 +2,7 @@ import { AddressLike, Contract, Signer, parseEther } from "ethers";
 import { IZombies } from "../../interfaces/IZombies";
 import Button from "@mui/material/Button";
 import { useState } from "react";
+import ZombieAvatar from "./ZombieAvatar";
 
 interface ZombieAccountItemProps {
   zombie: IZombies;
@@ -133,14 +134,15 @@ const ZombieAccountItem = ({
       border-2 border-gray-700 rounded-lg p-2 m-2'
     >
       <h4 className='text-lg font-bold text-center'>{zombie.name}</h4>
-      <p>id : {parseInt(zombie.id)}</p>
       <p>Level: {parseInt(zombie.level)}</p>
       <p>DNA: {parseInt(zombie.dna)}</p>
-      {/* <p>Level: {zombie.level}</p> */}
-      <p>Win: {parseInt(zombie.winCount)}</p>
-      <p>Loss: {parseInt(zombie.lossCount)}</p>
-      <p>Ready to eat : {parseInt(zombie.readyTime)}</p>
-      <p> Next eat after : {readyDate.toLocaleString()}</p>
+      <p>id : {parseInt(zombie.id)}</p>
+      <div className='flex justify-center h-[150px]'>
+        <ZombieAvatar zombieDna={zombie.dna} />
+      </div>
+      <p className='text-center'>Win: {parseInt(zombie.winCount)}</p>
+      <p className='text-center'>Loss: {parseInt(zombie.lossCount)}</p>
+      <p className='text-center'> next eat : {readyDate.toLocaleString()}</p>
       <div className='mt-2 text-center'>
         <Button variant='outlined' onClick={handleEditName}>
           Edit Name
@@ -175,93 +177,6 @@ const ZombieAccountItem = ({
           )}
         </div>
       )}
-    </div>
-  );
-
-  return (
-    <div className='flex flex-col items-center justify-around border-2 border-gray-700 rounded-lg p-2 m-2'>
-      <h4 className='text-lg font-bold'>{zombie.name}</h4>
-      <div
-        className={`zombie-char ${zombieStyles.head} ${zombieStyles.eye} ${zombieStyles.shirt}`}
-      >
-        <img
-          src='https://path/to/your/head-image.png'
-          className={zombieStyles.head}
-        />
-        <img
-          src='https://path/to/your/eye-image.png'
-          className={zombieStyles.eye}
-        />
-        <img
-          src='https://path/to/your/shirt-image.png'
-          className={zombieStyles.shirt}
-        />
-      </div>
-      <div className=''>
-        <div className='game-card home-card selectable selected'>
-          <div className='zombie-char'>
-            <div
-              className='zombie-loading zombie-parts'
-              style={{ display: "none" }}
-            ></div>
-            <div
-              className={`zombie-parts ${zombieStyles.head} ${zombieStyles.eye} ${zombieStyles.shirt}`}
-              style={{}}
-            >
-              <img
-                src='https://path/to/your/pants-image.png'
-                className='left-feet'
-                style={{
-                  filter: hueRotateFilter(zombie.dna.toString().slice(6, 8)),
-                }}
-              />
-              <img
-                src='https://path/to/your/shoes-image.png'
-                className='left-feet'
-                style={{
-                  filter: hueRotateFilter(zombie.dna.toString().slice(8, 10)),
-                }}
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-
-  return (
-    <div className='flex flex-col items-center justify-around border-2 border-gray-700 rounded-lg p-2 m-2'>
-      <h4 className='text-lg font-bold'>{zombie.name}</h4>
-      <div
-        className={`zombie-char ${zombieStyles.head} ${zombieStyles.eye} ${zombieStyles.shirt}`}
-      >
-        {/* ... contenu du zombie-char */}
-      </div>
-      <div className=''>
-        <div className='game-card home-card selectable selected'>
-          <div className='zombie-char'>
-            <div
-              className='zombie-loading zombie-parts'
-              style={{ display: "none" }}
-            ></div>
-            <div
-              className={`zombie-parts ${zombieStyles.head} ${zombieStyles.eye} ${zombieStyles.shirt}`}
-              style={{}}
-            >
-              {/* ... et ici vous pourriez insérer des images avec des styles modifiés, par exemple */}
-              <img
-                src='https://cryptozombies.io/course/76c713ac671599e30dc7.png'
-                className='left-feet'
-                style={{
-                  filter: hueRotateFilter(zombie.dna.toString().slice(6, 8)),
-                }}
-              />
-              {/* ... autres parties du zombie avec des styles modifiés en fonction de l'ADN */}
-              {/* Répétez cette opération pour chaque partie du zombie, en changeant la tranche de l'ADN et peut-être l'URL de l'image si nécessaire */}
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   );
 
