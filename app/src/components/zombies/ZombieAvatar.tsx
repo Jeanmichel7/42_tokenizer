@@ -1,5 +1,5 @@
 interface ZombieAvatarProps {
-  zombieDna: string;
+  zombieDna: bigint;
 }
 
 const headImages = [

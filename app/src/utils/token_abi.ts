@@ -102,20 +102,6 @@ export const tokenABI = [
   },
   {
     inputs: [],
-    name: "buyTokens",
-    outputs: [],
-    stateMutability: "payable",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "createOneToken",
-    outputs: [],
-    stateMutability: "payable",
-    type: "function",
-  },
-  {
-    inputs: [],
     name: "decimals",
     outputs: [{ internalType: "uint8", name: "", type: "uint8" }],
     stateMutability: "view",
@@ -132,10 +118,10 @@ export const tokenABI = [
     type: "function",
   },
   {
-    inputs: [{ internalType: "address", name: "account", type: "address" }],
-    name: "getBalance",
+    inputs: [],
+    name: "exchangeTokens",
     outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
-    stateMutability: "view",
+    stateMutability: "payable",
     type: "function",
   },
   {

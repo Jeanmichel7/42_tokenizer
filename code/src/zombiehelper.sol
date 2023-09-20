@@ -20,7 +20,7 @@ contract ZombieHelper is ZombieFeeding {
   }
 
   function getUserBalance(address userAddress) public view returns (uint256) {
-    return token.getBalance(userAddress);
+    return token.balanceOf(userAddress);
   }
 
   function setToken42Address(address tokenAddress) external onlyOwner {

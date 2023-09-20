@@ -22,13 +22,19 @@ const OtherZombies = ({
 
   useEffect(() => {
     const getZombies = async () => {
-      const zombies = (
-        await contractGame.getRandomZombiesTarget(myAddress)
-      ).toArray();
+      let zombies = [];
+      try {
+        zombies = await contractGame.getRandomZombiesTarget(myAddress);
+      } catch (error) {
+        console.log("error", error);
+      }
+      if (zombies.length === 0) return setZombies([]);
 
-      const filteredZombies = zombies.filter(
-        (z, index, self) => z !== BigInt(0) && self.indexOf(z) === index
-      );
+      const filteredZombies = zombies
+        .toArray()
+        .filter(
+          (z, index, self) => z !== BigInt(0) && self.indexOf(z) === index
+        );
 
       const zombiesData = await Promise.all(
         filteredZombies.map(async (zombie: IZombies) => {

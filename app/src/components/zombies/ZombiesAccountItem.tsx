@@ -280,7 +280,7 @@ const ZombieAccountItem = ({
             <form onSubmit={handleSubmitEditDna}>
               <input
                 type='text'
-                value={name}
+                value={dna}
                 onChange={(e) => setDna(e.target.value)}
               />
               <button type='submit'>Change Name</button>

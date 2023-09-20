@@ -36,7 +36,7 @@ function App() {
 
   const getFTCZBalance = useCallback(async () => {
     if (!myAddress || !contractToken) return;
-    const balance = await contractToken.getBalance(myAddress);
+    const balance = await contractToken.balanceOf(myAddress);
     setFtczBalance(formatEther(balance));
   }, [contractToken, myAddress]);
 
@@ -49,7 +49,7 @@ function App() {
 
   useEffect(() => {
     const loadWeb3 = async () => {
-      if (window.ethereum == null) {
+      if (!window.ethereum) {
         console.log("MetaMask not installed; using read-only defaults");
         setProvider(ethers.getDefaultProvider("goerli"));
       } else {

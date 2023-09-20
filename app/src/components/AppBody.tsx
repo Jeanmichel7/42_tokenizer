@@ -29,6 +29,7 @@ const AppBody = ({
 
   const getZombies = useCallback(async () => {
     const zombies = (await contractGame.getZombiesByOwner(myAddress)).toArray();
+    if (zombies.length === 0) return setZombies([]);
 
     const zombiesData = await Promise.all(
       zombies.map(async (zombie: IZombies) => {

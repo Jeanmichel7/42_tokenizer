@@ -71,7 +71,7 @@ const ZombiesAccount = ({
               <ZombieAccountItem
                 zombie={zombie}
                 getZombies={getZombies}
-                key={parseInt(zombie.id)}
+                key={zombie.id.toString()}
                 contractGame={contractGame}
                 contractToken={contractToken}
                 myAddress={myAddress}
