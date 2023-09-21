@@ -43,6 +43,7 @@ contract ZombieHelper is ZombieFeeding {
   }
 
   function levelUp(uint _zombieId) external {
+    require(zombies[_zombieId].level < 50, "Level max reached");
     require(
       token.allowance(msg.sender, address(this)) >= levelUpFee,
       "Token allowance not sufficient"

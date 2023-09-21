@@ -6,4 +6,5 @@ export interface IZombies {
   readyTime: bigint;
   winCount: bigint;
   lossCount: bigint;
+  isMint: boolean;
 }

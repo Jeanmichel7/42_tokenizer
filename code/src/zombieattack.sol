@@ -6,7 +6,7 @@ import "./zombiehelper.sol";
 contract ZombieAttack is ZombieHelper {
 
   uint randNonce = 0;
-  uint attackVictoryProbability = 70;
+  uint attackVictoryProbability = 30;
 
   constructor(address tokenAddress) ZombieHelper(tokenAddress){
   }
@@ -20,7 +20,7 @@ contract ZombieAttack is ZombieHelper {
     Zombie storage myZombie = zombies[_zombieId];
     Zombie storage enemyZombie = zombies[_targetId];
     uint rand = randMod(100);
-    if (rand <= attackVictoryProbability) {
+    if (rand <= attackVictoryProbability + myZombie.level) {
       myZombie.winCount++;
       myZombie.level++;
       enemyZombie.lossCount++;

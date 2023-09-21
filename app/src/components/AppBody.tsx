@@ -1,8 +1,8 @@
-import ZombiesAccount from "./zombies/ZombiesAccount";
+import ZombiesAccount from "./zombies/account/ZombiesAccount";
 import { useCallback, useEffect, useState } from "react";
 import { IZombies } from "../interfaces/IZombies";
 import { Contract, AddressLike, Provider, Signer } from "ethers";
-import OtherZombies from "./OtherZombies";
+import OtherZombies from "./zombies/target/OtherZombies";
 
 interface AppBodyProps {
   contractGame: Contract;
@@ -26,6 +26,8 @@ const AppBody = ({
   getFTCZBalance,
 }: AppBodyProps) => {
   const [zombies, setZombies] = useState<IZombies[]>([]);
+  // const [contractGameWithSigner, setContractGameWithSigner] =
+  //   useState<BaseContract | null>(null);
 
   const getZombies = useCallback(async () => {
     const zombies = (await contractGame.getZombiesByOwner(myAddress)).toArray();
@@ -33,8 +35,8 @@ const AppBody = ({
 
     const zombiesData = await Promise.all(
       zombies.map(async (zombie: IZombies) => {
-        const zombieDetails: IZombies = await contractGame.zombies(zombie);
-
+        const zombieDetails = await contractGame.zombies(zombie);
+        // console.log("zombieDetails", zombieDetails);
         return {
           id: zombie,
           name: zombieDetails.name,
@@ -43,6 +45,7 @@ const AppBody = ({
           readyTime: zombieDetails.readyTime,
           winCount: zombieDetails.winCount,
           lossCount: zombieDetails.lossCount,
+          isMint: zombieDetails.isMint,
         };
       })
     );
@@ -50,33 +53,39 @@ const AppBody = ({
   }, [contractGame, myAddress]);
 
   useEffect(() => {
-    if (contractGame && myAddress && provider) {
-      getZombies();
+    if (contractGame && myAddress && provider) getZombies();
+  }, [contractGame, getZombies, myAddress, provider, signer]);
 
-      const listenEvents = async () => {
-        if (contractGame) {
-          contractGame.on("NewZombie", async (data) => {
-            console.log("Événement NewZombie reçu : ", data);
+  // useEffect(() => {
+  //   if (contractGame && signer)
+  //     setContractGameWithSigner(contractGame.connect(signer));
+  // }, [contractGame, signer]);
 
-            const contractGameWithSigner = contractGame.connect(signer);
-            try {
-              const ret = await contractGameWithSigner.reactToCustomEvent(
-                data.zombieId
-              );
-              console.log("ret : ", ret);
+  // useEffect(() => {
+  //   const listenEvents = async () => {
+  //     if (contractGame && contractGameWithSigner) {
+  //       contractGame.on("NewZombie", async (data) => {
+  //         console.log("Événement NewZombie reçu : ", data);
 
-              const receipt = await ret.wait();
-              console.log("Transaction Receipt:", receipt);
-            } catch (e) {
-              console.log(e);
-            }
-          });
-        }
-      };
+  //         try {
+  //           const ret = await contractGameWithSigner.mintZombie(data);
+  //           console.log("ret : ", ret);
 
-      listenEvents();
-    }
-  }, [contractGame, getZombies, myAddress, provider]);
+  //           const receipt = await ret.wait();
+  //           console.log("Transaction Receipt:", receipt);
+  //         } catch (e) {
+  //           console.log(e);
+  //         }
+  //       });
+  //     }
+  //   };
+  //   listenEvents();
+  //   return () => {
+  //     if (contractGame) {
+  //       contractGame.removeAllListeners();
+  //     }
+  //   };
+  // }, [contractGame, contractGameWithSigner]);
 
   return (
     <div className='flex flex-col items-center justify-around p-5'>
@@ -101,6 +110,7 @@ const AppBody = ({
       {/* <FeedZombies /> */}
       <OtherZombies
         myZombies={zombies}
+        getZombies={getZombies}
         contractGame={contractGame}
         contractToken={contractToken}
         myAddress={myAddress}

@@ -17,6 +17,7 @@ contract ZombieFactory is Ownable {
     uint32  readyTime;
     uint16  winCount;
     uint16  lossCount;
+    bool    isMint;
   }
 
   Zombie[] public zombies;
@@ -24,8 +25,6 @@ contract ZombieFactory is Ownable {
   mapping (uint => address) public zombieToOwner;
   mapping (address => uint) ownerZombieCount;
 
-  // constructor(address tokenAddress) ERC721("ZombieNFT", "ZMBC") {
-  // }
   function _createZombie(string memory _name, uint _dna) internal {
     zombies.push(
       Zombie(
@@ -34,7 +33,8 @@ contract ZombieFactory is Ownable {
         1,
         uint32(block.timestamp + cooldownTime),
         0,
-        0
+        0,
+        false
       )
     );
     uint zombieId = zombies.length -1;

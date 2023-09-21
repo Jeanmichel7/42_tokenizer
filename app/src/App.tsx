@@ -1,4 +1,4 @@
-import Header from "./components/Header";
+import Header from "./components/header/Header";
 import AppBody from "./components/AppBody";
 import { useState, useEffect, useCallback } from "react";
 import { tokenABI } from "./utils/token_abi";
@@ -15,7 +15,7 @@ import {
 import BuyToken from "./components/token/BuyToken";
 
 function App() {
-  const [provider, setProvider] = useState<Provider | null>(null);
+  const [provider, setProvider] = useState<BrowserProvider | null>(null);
   const [signer, setSigner] = useState<Signer | null>(null);
   const [contractToken, setContractToken] = useState<Contract | null>(null);
   const [contractGame, setContractGame] = useState<Contract | null>(null);
@@ -51,7 +51,7 @@ function App() {
     const loadWeb3 = async () => {
       if (!window.ethereum) {
         console.log("MetaMask not installed; using read-only defaults");
-        setProvider(ethers.getDefaultProvider("goerli"));
+        // setProvider(ethers.getDefaultProvider("goerli"));
       } else {
         const provider = new BrowserProvider(window.ethereum);
         setProvider(provider);
@@ -60,7 +60,7 @@ function App() {
     };
 
     loadWeb3();
-  }, []);
+  }, [myAddress]);
 
   useEffect(() => {
     const loadContractToken = async () => {

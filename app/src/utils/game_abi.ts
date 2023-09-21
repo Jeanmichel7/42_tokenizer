@@ -231,6 +231,13 @@ export const gameABI = [
     type: "function",
   },
   {
+    inputs: [{ internalType: "uint256", name: "zombieId", type: "uint256" }],
+    name: "mintZombie",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
     inputs: [],
     name: "name",
     outputs: [{ internalType: "string", name: "", type: "string" }],
@@ -249,13 +256,6 @@ export const gameABI = [
     name: "ownerOf",
     outputs: [{ internalType: "address", name: "", type: "address" }],
     stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [{ internalType: "uint256", name: "data", type: "uint256" }],
-    name: "reactToCustomEvent",
-    outputs: [],
-    stateMutability: "nonpayable",
     type: "function",
   },
   {
@@ -384,6 +384,7 @@ export const gameABI = [
       { internalType: "uint32", name: "readyTime", type: "uint32" },
       { internalType: "uint16", name: "winCount", type: "uint16" },
       { internalType: "uint16", name: "lossCount", type: "uint16" },
+      { internalType: "bool", name: "isMint", type: "bool" },
     ],
     stateMutability: "view",
     type: "function",

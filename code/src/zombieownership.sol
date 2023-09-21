@@ -38,8 +38,10 @@ contract ZombieOwnership is ZombieAttack, ERC721 {
         emit Approval(msg.sender, _approved, _tokenId);
     }
 
-    function reactToCustomEvent(uint256 data) public {
-        _safeMint(msg.sender, data);
+    function mintZombie(uint256 zombieId) public {
+        require(zombieToOwner[zombieId] == msg.sender);
+        _safeMint(msg.sender, zombieId);
+        zombies[zombieId].isMint = true;
     }
 
 }

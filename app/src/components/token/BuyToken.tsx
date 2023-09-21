@@ -28,20 +28,17 @@ const BuyToken = ({
 
   const poolBalance: bigint = 42n * 1000000n * 10n ** 18n;
   const baseRate = 1000;
+
   const [poolAvailable, setPoolAvailable] = useState<bigint>(0n);
+  const [exchangeRatio, setExchangeRatio] = useState<string>("-");
   const contractWithSigner = contractToken.connect(signer);
 
   const calculateFTCZValue = async (value: bigint): Promise<number> => {
     const poolAvailableToken: bigint = await contractToken.balanceOf(
       contractToken.target
     );
-
     const ratioTokenInPool = Number(poolBalance) / Number(poolAvailableToken);
-    console.log("ratioTokenInPool", ratioTokenInPool);
-
     const tokensToExchange = Number(value) * (baseRate / ratioTokenInPool);
-    console.log("ethValue", tokensToExchange);
-
     return tokensToExchange;
   };
 
@@ -49,13 +46,8 @@ const BuyToken = ({
     const poolAvailableToken: bigint = await contractToken.balanceOf(
       contractToken.target
     );
-
     const ratioTokenInPool = Number(poolBalance) / Number(poolAvailableToken);
-    console.log("ratioTokenInPool", ratioTokenInPool);
-
     const ethToExchange = Number(value) / (baseRate / ratioTokenInPool);
-    console.log("ethValue", ethToExchange);
-
     return ethToExchange;
   };
 
@@ -85,10 +77,8 @@ const BuyToken = ({
   const handleFormSubmit = useCallback(
     async (event) => {
       event.preventDefault();
-      console.log("ethValue", ethValue);
-      console.log("ftczValue", ftczValue, parseEther(ftczValue));
       try {
-        const deccimalValue = parseEther(ethValue.toString());
+        const deccimalValue = parseEther(ethValue.toFixed(18));
         const ret = await contractWithSigner.exchangeTokens({
           value: deccimalValue,
         });
@@ -102,14 +92,12 @@ const BuyToken = ({
         console.error("error", e);
       }
     },
-    [ethValue, contractWithSigner]
+    [ethValue, ftczValue, contractWithSigner, getEthBalance, getFTCZBalance]
   );
 
   const handleFormSubmitTransfert = useCallback(
     async (event) => {
       event.preventDefault();
-      console.log("transfertTo", transfertTo);
-      console.log("transfertAmount", transfertAmount);
       try {
         const ret = await contractWithSigner.transfer(
           transfertTo,
@@ -125,7 +113,13 @@ const BuyToken = ({
         console.error("error", e);
       }
     },
-    [transfertTo, transfertAmount]
+    [
+      transfertTo,
+      transfertAmount,
+      contractWithSigner,
+      getEthBalance,
+      getFTCZBalance,
+    ]
   );
 
   useEffect(() => {
@@ -139,37 +133,51 @@ const BuyToken = ({
     getPoolAvailable();
   }, [contractToken]);
 
+  useEffect(() => {
+    const calcRatio = async () => {
+      const poolAvailableToken: bigint = await contractToken.balanceOf(
+        contractToken.target
+      );
+
+      const ratioTokenInPool = Number(poolBalance) / Number(poolAvailableToken);
+      const ratioExchange = baseRate / ratioTokenInPool;
+      setExchangeRatio(ratioExchange.toFixed(3));
+      return ratioExchange.toFixed(3);
+    };
+    calcRatio();
+  }, [contractToken, poolBalance]);
+
   return (
     <div className='flex flex-col justify-center items-center h-full'>
-      <div className='border rounded-md p-3 m-2'>
+      <h2 className='text-center text-lg font-bold'>Buy FTCZ</h2>
+
+      <div
+        className='flex flex-col justify-center items-center 
+        border rounded-md p-3 m-2 w-[66vw]'
+      >
+        <p className='font-bold'>Token Pool available</p>
         <p>
-          Token Pool available : {poolAvailable.toString()} /{" "}
-          {(poolBalance / 10n ** 18n).toString()} FTCZ
+          {poolAvailable.toString()} / {(poolBalance / 10n ** 18n).toString()}{" "}
+          FTCZ
         </p>
-        <p>Ratio : </p>
-        <h2 className='text-center text-lg font-bold mb-5'>Buy FTCZ</h2>
-        <form onSubmit={handleFormSubmit}>
-          <div className='flex justify-center items-center h-full'>
-            <div className=''>
-              <input
-                type='text'
-                value={ftczValue.toString()}
-                onChange={handleFtczInputChange}
-              />
-              <label> FTCZ</label>
-              {/* </label> */}
-            </div>
-            <div className='border-[1px] h-8 mx-3'></div>
-            <div className=''>
-              <input
-                type='text'
-                value={ethValue.toString()}
-                onChange={handleEthInputChange}
-              />
-              <label> ETH</label>
-            </div>
-          </div>
-          <div className='text-center mt-3'>
+        <p className='font-bold mt-2'>Ratio </p>
+        <p>{exchangeRatio} FTCZ / 1 ETH </p>
+        <form onSubmit={handleFormSubmit} className='text-center mt-4'>
+          <input
+            type='text'
+            value={ftczValue.toString()}
+            onChange={handleFtczInputChange}
+          />
+          <label> FTCZ {"<=>"} </label>
+
+          <input
+            type='text'
+            value={ethValue.toString()}
+            onChange={handleEthInputChange}
+          />
+          <label> ETH </label>
+
+          <div className='my-2'>
             <Button variant='contained' type='submit'>
               Convert
             </Button>
@@ -177,44 +185,42 @@ const BuyToken = ({
           {txId && (
             <div
               className='flex flex-col justify-center items-center my-5
-          border-[1px] rounded-lg p-5'
+              border-[1px] rounded-lg p-5'
             >
               <CircularProgress size='30px' />
-              <p>View on EtherScan:</p>
               <a
                 href={"https://goerli.etherscan.io/tx/" + txId}
                 target='_blank'
                 rel='noopener noreferrer'
               >
-                https://goerli.etherscan.io/tx/{txId}
+                View transaction
               </a>
             </div>
           )}
         </form>
       </div>
 
-      <div className='border rounded-md p-3 m-2'>
-        <h2 className='text-center text-lg font-bold'>Transfert FTCZ</h2>
+      <h2 className='text-center text-lg font-bold'>Transfert FTCZ</h2>
+      <div
+        className='flex flex-col justify-center items-center 
+        border rounded-md p-3 m-2 w-[66vw]'
+      >
         <form onSubmit={handleFormSubmitTransfert}>
-          <div className='flex flex-col items-end h-full'>
-            <div className='m-1'>
-              <label>To </label>
-              <input
-                type='string'
-                value={transfertTo.toString()}
-                onChange={handleTransfertToInputChange}
-              />
-              {/* </label> */}
-            </div>
-            <div className='m-1'>
-              <label>Amount </label>
-              <input
-                type='number'
-                value={transfertAmount.toString()}
-                onChange={handleTransfertAmountInputChange}
-              />
-            </div>
-          </div>
+          <label>To </label>
+          <input
+            type='string'
+            value={transfertTo.toString()}
+            onChange={handleTransfertToInputChange}
+            className='w-full'
+          />
+
+          <label>Amount </label>
+          <input
+            type='number'
+            value={transfertAmount.toString()}
+            onChange={handleTransfertAmountInputChange}
+            className='w-full'
+          />
           <div className='text-center mt-3'>
             <Button variant='contained' type='submit'>
               Transfert
@@ -226,13 +232,12 @@ const BuyToken = ({
               border-[1px] rounded-lg p-5'
             >
               <CircularProgress size='30px' />
-              <p>View on EtherScan:</p>
               <a
-                href={"https://goerli.etherscan.io/tx/" + txId}
+                href={"https://goerli.etherscan.io/tx/" + txIdTransfert}
                 target='_blank'
                 rel='noopener noreferrer'
               >
-                https://goerli.etherscan.io/tx/{txId}
+                View transaction
               </a>
             </div>
           )}

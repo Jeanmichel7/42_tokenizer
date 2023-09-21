@@ -1,5 +1,5 @@
 import { AddressLike, Contract, Signer } from "ethers";
-import { IZombies } from "../../interfaces/IZombies";
+import { IZombies } from "../../../interfaces/IZombies";
 import ZombieAccountItem from "./ZombiesAccountItem";
 import { Button, CircularProgress } from "@mui/material";
 import { useState } from "react";
@@ -67,7 +67,7 @@ const ZombiesAccount = ({
           {zombies.length < 2 && (
             <Button onClick={handleCreateZombie}>Create zombie</Button>
           )}
-          <div className='flex items-center justify-around'>
+          <div className='flex items-center justify-center flex-wrap'>
             {zombies.map((zombie) => (
               <ZombieAccountItem
                 zombie={zombie}
@@ -91,13 +91,12 @@ const ZombiesAccount = ({
           <CircularProgress />
           {txId && (
             <div className='flex flex-col justify-center items-center mb-5'>
-              <p>View on Etherscan :</p>
               <a
                 href={"https://goerli.etherscan.io/tx/" + txId}
                 target='_blank'
                 rel='noopener noreferrer'
               >
-                https://goerli.etherscan.io/tx/{txId}
+                View transaction
               </a>
             </div>
           )}
