@@ -50,7 +50,32 @@ const AppBody = ({
   }, [contractGame, myAddress]);
 
   useEffect(() => {
-    if (contractGame && myAddress && provider) getZombies();
+    if (contractGame && myAddress && provider) {
+      getZombies();
+
+      const listenEvents = async () => {
+        if (contractGame) {
+          contractGame.on("NewZombie", async (data) => {
+            console.log("Événement NewZombie reçu : ", data);
+
+            const contractGameWithSigner = contractGame.connect(signer);
+            try {
+              const ret = await contractGameWithSigner.reactToCustomEvent(
+                data.zombieId
+              );
+              console.log("ret : ", ret);
+
+              const receipt = await ret.wait();
+              console.log("Transaction Receipt:", receipt);
+            } catch (e) {
+              console.log(e);
+            }
+          });
+        }
+      };
+
+      listenEvents();
+    }
   }, [contractGame, getZombies, myAddress, provider]);
 
   return (

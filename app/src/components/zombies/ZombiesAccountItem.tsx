@@ -129,17 +129,17 @@ const ZombieAccountItem = ({
     if (contractWithSigner === null) return;
     setIsLoadingFeed(true);
     try {
-      const allowance = await contractToken.allowance(
-        myAddress,
-        import.meta.env.VITE_GAME_ADDRESS
-      );
-      if (allowance.toString() === "0") {
-        const tx = await contractTokenSigner.approve(
-          import.meta.env.VITE_GAME_ADDRESS,
-          10 ** 13
-        );
-        await tx.wait();
-      }
+      // const allowance = await contractToken.allowance(
+      //   myAddress,
+      //   import.meta.env.VITE_GAME_ADDRESS
+      // );
+      // if (allowance.toString() === "0") {
+      //   const tx = await contractTokenSigner.approve(
+      //     import.meta.env.VITE_GAME_ADDRESS,
+      //     10 ** 13
+      //   );
+      //   await tx.wait();
+      // }
 
       const ret = await contractWithSigner.feedHumain(zombie.id);
       setTxId(ret.hash);
@@ -203,19 +203,19 @@ const ZombieAccountItem = ({
       <div className='mt-2 text-center'>
         <Button variant='outlined' onClick={handleEditName}>
           Edit Name
-          {isLoadingEditName && <CircularProgress size='15px' />}
+          {isLoadingEditName && <CircularProgress size='15px' sx={{ ml: 1 }} />}
         </Button>
         <Button variant='outlined' onClick={handleEditDna}>
           Edit Dna
-          {isLoadingEditDna && <CircularProgress size='15px' />}
+          {isLoadingEditDna && <CircularProgress size='15px' sx={{ ml: 1 }} />}
         </Button>
         <Button variant='outlined' onClick={handleFeed}>
           Feed
-          {isLoadingFeed && <CircularProgress size='15px' />}
+          {isLoadingFeed && <CircularProgress size='15px' sx={{ ml: 1 }} />}
         </Button>
         <Button variant='outlined' onClick={handleLevelUp}>
           Level up
-          {isLoadingLvlUp && <CircularProgress size='15px' />}
+          {isLoadingLvlUp && <CircularProgress size='15px' sx={{ ml: 1 }} />}
         </Button>
       </div>
       {txId && (

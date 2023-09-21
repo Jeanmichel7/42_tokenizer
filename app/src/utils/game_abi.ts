@@ -102,8 +102,8 @@ export const gameABI = [
   },
   {
     inputs: [
-      { internalType: "address", name: "to", type: "address" },
-      { internalType: "uint256", name: "tokenId", type: "uint256" },
+      { internalType: "address", name: "_approved", type: "address" },
+      { internalType: "uint256", name: "_tokenId", type: "uint256" },
     ],
     name: "approve",
     outputs: [],
@@ -121,7 +121,7 @@ export const gameABI = [
     type: "function",
   },
   {
-    inputs: [{ internalType: "address", name: "owner", type: "address" }],
+    inputs: [{ internalType: "address", name: "_owner", type: "address" }],
     name: "balanceOf",
     outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
     stateMutability: "view",
@@ -245,10 +245,17 @@ export const gameABI = [
     type: "function",
   },
   {
-    inputs: [{ internalType: "uint256", name: "tokenId", type: "uint256" }],
+    inputs: [{ internalType: "uint256", name: "_tokenId", type: "uint256" }],
     name: "ownerOf",
     outputs: [{ internalType: "address", name: "", type: "address" }],
     stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "uint256", name: "data", type: "uint256" }],
+    name: "reactToCustomEvent",
+    outputs: [],
+    stateMutability: "nonpayable",
     type: "function",
   },
   {
@@ -337,9 +344,9 @@ export const gameABI = [
   },
   {
     inputs: [
-      { internalType: "address", name: "from", type: "address" },
-      { internalType: "address", name: "to", type: "address" },
-      { internalType: "uint256", name: "tokenId", type: "uint256" },
+      { internalType: "address", name: "_from", type: "address" },
+      { internalType: "address", name: "_to", type: "address" },
+      { internalType: "uint256", name: "_tokenId", type: "uint256" },
     ],
     name: "transferFrom",
     outputs: [],

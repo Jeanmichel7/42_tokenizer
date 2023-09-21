@@ -24,6 +24,8 @@ contract ZombieFactory is Ownable {
   mapping (uint => address) public zombieToOwner;
   mapping (address => uint) ownerZombieCount;
 
+  // constructor(address tokenAddress) ERC721("ZombieNFT", "ZMBC") {
+  // }
   function _createZombie(string memory _name, uint _dna) internal {
     zombies.push(
       Zombie(
@@ -35,9 +37,10 @@ contract ZombieFactory is Ownable {
         0
       )
     );
-    zombieToOwner[zombies.length -1] = msg.sender;
+    uint zombieId = zombies.length -1;
+    zombieToOwner[zombieId] = msg.sender;
     ownerZombieCount[msg.sender]++;
-    emit NewZombie(zombies.length -1, _name, _dna);
+    emit NewZombie(zombieId, _name, _dna);
   }
 
   function _generateRandomDna(string memory _str) private view returns (uint) {

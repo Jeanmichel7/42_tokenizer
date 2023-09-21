@@ -29,6 +29,7 @@ const ZombiesAccount = ({
 }: zombiesAccountProps) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [txId, setTxId] = useState<string>("");
+
   const handleCreateZombie = async () => {
     const contractGameWithSigner = contractGame.connect(signer);
     // console.log(contractGame.estimateGas.createRandomZombie());

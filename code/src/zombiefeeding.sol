@@ -18,7 +18,7 @@ abstract contract KittyInterface {
   );
 }
 
-contract ZombieFeeding is ZombieFactory {
+abstract contract ZombieFeeding is ZombieFactory {
 
   KittyInterface kittyContract;
 
