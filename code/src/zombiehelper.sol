@@ -94,43 +94,54 @@ contract ZombieHelper is ZombieFeeding {
     return result;
   }
 
+  /**
+   * @dev Return 5 random zombies not to owner
+   * @param _owner address of owner
+   */
+
   function getRandomZombiesTarget(address _owner) external view returns(uint[] memory) {
     require(zombies.length > 0, "No zombies found");
-    uint[] memory result = new uint[](5);
-    
-    for (uint i = 0; i < 5; i++) {
-      uint rand = uint(keccak256(abi.encodePacked(block.timestamp, msg.sender, i))) % zombies.length;
 
-      if (zombieToOwner[rand] != _owner) {
-        for(uint j=0; j < i; j++) {
-          if (result[j] == rand) {
-            // i--;
+    uint maxLength = 5;
+    uint[] memory result = new uint[](maxLength);
+    uint count = 0;
+    uint attempts = 0;
+
+    uint[] memory seenZombies = new uint[](zombies.length);
+    uint seenCount = 0;
+
+    while (count < maxLength && attempts < zombies.length * 2) {
+      uint rand = uint(keccak256(abi.encodePacked(block.timestamp, msg.sender, attempts))) % zombies.length;
+      bool isSeen = false;
+
+      /* check already in seenZombies */
+      for (uint i = 0; i < seenCount; i++) {
+        if (seenZombies[i] == rand) {
+            isSeen = true;
             break;
-          }
         }
-        result[i] = rand;
-      }
-    }
-    return result;
-  }
-
-  function getRandomZombiesTargetTest(address _owner) external view returns(uint[] memory) {
-    require(zombies.length > 0, "No zombies found");
-    uint randNonce = 0;
-    uint[] memory result = new uint[](5);
-    
-    for (uint i = 0; i < 5; i++) {
-      uint rand = uint(keccak256(abi.encodePacked(block.timestamp, msg.sender, randNonce))) % zombies.length;
-      randNonce++;
-
-      if (zombieToOwner[rand] == _owner) {  // add check already exist in result liste
-        i--;
-        continue;
       }
 
-      // ajoute le zombie dans le tableau
-      result[i] = rand;
+      /* check zombie is not to owner */
+      if (!isSeen && zombieToOwner[rand] != _owner) {
+        result[count] = rand;
+        seenZombies[seenCount] = rand;
+        seenCount++;
+        count++;
+      }
+
+      attempts++;
     }
+
+    // Redimensionner le tableau de sortie si moins de 5 zombies sont trouvés
+    if (count < maxLength) {
+        uint[] memory resizedResult = new uint[](count);
+        for (uint i = 0; i < count; i++) {
+            resizedResult[i] = result[i];
+        }
+        return resizedResult;
+    }
+
     return result;
   }
 

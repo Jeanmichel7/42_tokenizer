@@ -2,22 +2,11 @@ import { useCallback, useEffect, useState } from "react";
 import CurrencyFrancIcon from "@mui/icons-material/CurrencyFranc";
 import Button from "@mui/material/Button";
 import LogoutIcon from "@mui/icons-material/Logout";
-import {
-  Contract,
-  Provider,
-  formatEther,
-  parseEther,
-  AddressLike,
-  Signer,
-} from "ethers";
+import { AddressLike } from "ethers";
 import { IconButton } from "@mui/material";
 
 interface HeaderProps {
-  provider: Provider | null;
-  contract: Contract | null;
   setMyAddress: React.Dispatch<React.SetStateAction<AddressLike | null>>;
-  myAddress: AddressLike | null;
-  signer: Signer | null;
   currentPage: string;
   setCurrentPage: React.Dispatch<React.SetStateAction<string>>;
   ethBalance: string;
@@ -25,11 +14,7 @@ interface HeaderProps {
 }
 
 const Header = ({
-  provider,
-  contract,
   setMyAddress,
-  myAddress,
-  signer,
   currentPage,
   setCurrentPage,
   ethBalance,

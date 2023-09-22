@@ -5,9 +5,7 @@ import { tokenABI } from "./utils/token_abi";
 import { gameABI } from "./utils/game_abi";
 import {
   Contract,
-  ethers,
   BrowserProvider,
-  Provider,
   Signer,
   AddressLike,
   formatEther,
@@ -93,11 +91,7 @@ function App() {
     <div className='flex flex-col h-screen'>
       {provider && (
         <Header
-          provider={provider}
-          contract={contractToken}
           setMyAddress={setMyAddress}
-          myAddress={myAddress}
-          signer={signer}
           currentPage={currentPage}
           setCurrentPage={setCurrentPage}
           ethBalance={ethBalance}
