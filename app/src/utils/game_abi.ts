@@ -54,6 +54,14 @@ export const gameABI = [
   {
     anonymous: false,
     inputs: [
+      { indexed: false, internalType: "bool", name: "isWin", type: "bool" },
+    ],
+    name: "AttackResult",
+    type: "event",
+  },
+  {
+    anonymous: false,
+    inputs: [
       {
         indexed: false,
         internalType: "uint256",
@@ -116,7 +124,7 @@ export const gameABI = [
       { internalType: "uint256", name: "_targetId", type: "uint256" },
     ],
     name: "attack",
-    outputs: [],
+    outputs: [{ internalType: "bool", name: "", type: "bool" }],
     stateMutability: "nonpayable",
     type: "function",
   },
@@ -181,13 +189,6 @@ export const gameABI = [
   {
     inputs: [{ internalType: "address", name: "_owner", type: "address" }],
     name: "getRandomZombiesTarget",
-    outputs: [{ internalType: "uint256[]", name: "", type: "uint256[]" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [{ internalType: "address", name: "_owner", type: "address" }],
-    name: "getRandomZombiesTargetTest",
     outputs: [{ internalType: "uint256[]", name: "", type: "uint256[]" }],
     stateMutability: "view",
     type: "function",

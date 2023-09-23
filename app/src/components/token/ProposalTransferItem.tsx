@@ -1,13 +1,16 @@
 import { Button, CircularProgress } from "@mui/material";
 import { TransferRequest } from "../../interfaces/ITransfertRequest";
-import { BaseContract } from "ethers";
+import { Contract, formatEther } from "ethers";
 import { useState } from "react";
+import CurrencyFrancIcon from "@mui/icons-material/CurrencyFranc";
 
 interface ProposalTransferItemProps {
   proposal: TransferRequest;
-  nbReqiredSignature: bigint;
-  contractTokemWithSigner: BaseContract;
+  nbReqiredSignature: number;
+  contractTokemWithSigner: Contract;
   getTransferRequests: () => Promise<void>;
+  getEthBalance: () => Promise<void>;
+  getFTCZBalance: () => Promise<void>;
 }
 
 const ProposalTransferItem = ({
@@ -15,12 +18,13 @@ const ProposalTransferItem = ({
   nbReqiredSignature,
   contractTokemWithSigner,
   getTransferRequests,
+  getEthBalance,
+  getFTCZBalance,
 }: ProposalTransferItemProps) => {
   const [txId, setTxId] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
 
   const handleApproveProposal = async () => {
-    console.log("proposal", proposal);
     setIsLoading(true);
     try {
       const ret = await contractTokemWithSigner.approveTransfer(proposal.id);
@@ -33,25 +37,50 @@ const ProposalTransferItem = ({
     setTxId("");
     setIsLoading(false);
     getTransferRequests();
+    getEthBalance();
+    getFTCZBalance();
   };
 
   return (
-    <div className='flex justify-center items-center w-full h-8'>
-      <p className='w-1/12'>{proposal.id}</p>
-      <p className='w-5/12'>{proposal.to.toString()}</p>
-      <p className='w-4/12'>{proposal.amount.toString()} </p>
-      <p className='w-1/12'>
-        {proposal.approvals.toString()}/ {nbReqiredSignature.toString()}{" "}
-      </p>
-      <p className='w-1/12'>
-        {proposal.executed ? "Executed" : "Not Executed"}
-      </p>
-      {!proposal.executed ? (
-        <Button variant='contained' onClick={handleApproveProposal}>
-          Approve
-          {isLoading && <CircularProgress size={14} />}
-        </Button>
-      ) : null}
+    <>
+      <div className='flex justify-center items-center w-full h-8'>
+        <p className='w-1/12'>{proposal.id}</p>
+        <p className='w-6/12 overflow-hidden truncate mx-1'>
+          {proposal.to.toString()}
+        </p>
+        <div className='w-2/12 text-right mr-5 flex justify-end items-center'>
+          <p className='overflow-hidden truncate'>
+            {formatEther(proposal.amount)}
+          </p>
+          {proposal.isEth ? (
+            <img
+              src='https://upload.wikimedia.org/wikipedia/commons/0/05/Ethereum_logo_2014.svg'
+              alt='eth'
+              className='w-6 h-6'
+            />
+          ) : (
+            <CurrencyFrancIcon />
+          )}
+        </div>
+        <p className='w-1/12 text-center'>
+          {proposal.approvals.toString()} / {nbReqiredSignature.toString()}{" "}
+        </p>
+        <div className='w-2/12 flex justify-center items-center'>
+          {proposal.executed ? (
+            "Executed"
+          ) : (
+            <Button
+              variant='contained'
+              size='small'
+              onClick={handleApproveProposal}
+            >
+              Approve
+              {isLoading && <CircularProgress size={14} />}
+            </Button>
+          )}
+        </div>
+      </div>
+
       {txId && (
         <div
           className='flex flex-col justify-center items-center mt-2
@@ -68,7 +97,7 @@ const ProposalTransferItem = ({
           </a>
         </div>
       )}
-    </div>
+    </>
   );
 };
 

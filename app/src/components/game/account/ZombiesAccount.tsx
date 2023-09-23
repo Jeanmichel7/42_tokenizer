@@ -1,4 +1,4 @@
-import { AddressLike, Contract, Signer } from "ethers";
+import { AddressLike, Contract, Signer, isError } from "ethers";
 import { IZombies } from "../../../interfaces/IZombies";
 import ZombieAccountItem from "./ZombiesAccountItem";
 import { Button, CircularProgress } from "@mui/material";
@@ -11,7 +11,6 @@ interface zombiesAccountProps {
   myAddress: AddressLike;
   signer: Signer;
   contractToken: Contract;
-  setCurrentPage: React.Dispatch<React.SetStateAction<string>>;
   getEthBalance: () => Promise<void>;
   getFTCZBalance: () => Promise<void>;
 }
@@ -23,15 +22,15 @@ const ZombiesAccount = ({
   contractToken,
   myAddress,
   signer,
-  setCurrentPage,
   getEthBalance,
   getFTCZBalance,
 }: zombiesAccountProps) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [txId, setTxId] = useState<string>("");
+  const [error, setError] = useState<string>("");
 
   const handleCreateZombie = async () => {
-    const contractGameWithSigner = contractGame.connect(signer);
+    const contractGameWithSigner = contractGame.connect(signer) as Contract;
     // console.log(contractGame.estimateGas.createRandomZombie());
     setIsLoading(true);
     try {
@@ -48,7 +47,13 @@ const ZombiesAccount = ({
       await getZombies();
       setTxId("");
     } catch (e) {
-      console.log(e);
+      if (isError(e, "CALL_EXCEPTION")) {
+        if (e.reason) setError(e.reason);
+        else if (e.error) setError(e.error.message);
+        else setError(e.toString());
+      } else {
+        console.log("error", e);
+      }
     }
     setIsLoading(false);
   };
@@ -67,6 +72,7 @@ const ZombiesAccount = ({
           {zombies.length < 2 && (
             <Button onClick={handleCreateZombie}>Create zombie</Button>
           )}
+          {error && <p className='text-red-500'>{error}</p>}
           <div className='flex items-center justify-center flex-wrap'>
             {zombies.map((zombie) => (
               <ZombieAccountItem
@@ -77,7 +83,6 @@ const ZombiesAccount = ({
                 contractToken={contractToken}
                 myAddress={myAddress}
                 signer={signer}
-                setCurrentPage={setCurrentPage}
                 getEthBalance={getEthBalance}
                 getFTCZBalance={getFTCZBalance}
               />

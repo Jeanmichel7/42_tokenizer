@@ -2,25 +2,29 @@
 pragma solidity ^0.8.13;
 
 import {ERC20} from "openzeppelin-contracts/contracts/token/ERC20/ERC20.sol";
+import {AccessControl} from "openzeppelin-contracts/contracts/access/AccessControl.sol";
 
 /**
  * @title Token42
  * @dev This contract implements a basic ERC20 token with multi-signature capabilities.
  */
-contract Token42 is ERC20 {
+contract Token42 is ERC20, AccessControl {
 
-    uint256 public constant RATE = 1000;
+    uint128 public constant RATE = 1000;
+    uint128 public requiredSignatures;
+    bytes32 public constant MINT_ROLE = keccak256("MINT_ROLE");
+    bytes32 public constant BURNER_ROLE = keccak256("BURNER_ROLE");
     address[] public owners;
     mapping(address => bool) public isOwner;
-    uint256 public requiredSignatures;
 
     struct TransferRequest {
+        bool isEth;
         address to;
         uint256 amount;
         uint256 approvals;
         bool executed;
     }
-    
+
     TransferRequest[] public transferRequests;
     mapping(uint256 => mapping(address => bool)) public approvals;
 
@@ -43,12 +47,15 @@ contract Token42 is ERC20 {
         string memory name, 
         string memory symbol, 
         address[] memory _owners, 
-        uint256 _requiredSignatures
+        uint128 _requiredSignatures
     ) ERC20(name, symbol) {
         _mint(address(this), 42 * 1000000 * (10 ** uint(decimals())));
         
         for(uint i = 0; i < _owners.length; i++) {
             isOwner[_owners[i]] = true;
+            _grantRole(DEFAULT_ADMIN_ROLE, _owners[i]);
+            _grantRole(MINT_ROLE, _owners[i]);
+            _grantRole(BURNER_ROLE, _owners[i]);
         }
         owners = _owners;
         requiredSignatures = _requiredSignatures;
@@ -57,11 +64,12 @@ contract Token42 is ERC20 {
     /**
      * @dev Proposes a new transfer. The proposer automatically approves the transfer.
      * @param to The recipient's address.
-     * @param amount The amount of tokens to be transferred.
+     * @param amount The amount of tokens to be transferred  in decimal
      * @return The ID of the proposed transfer. This can be used for future reference and approvals.
      */
-    function proposeTransfer(address to, uint256 amount) public onlyOwner returns (uint256) {
+    function proposeTransfer(address to, uint256 amount, bool isEth) public onlyOwner returns (uint256) {
         TransferRequest memory newRequest = TransferRequest({
+            isEth: isEth,
             to: to,
             amount: amount,
             approvals: 1,
@@ -73,6 +81,7 @@ contract Token42 is ERC20 {
         approvals[transferId][msg.sender] = true;
         return transferId;
     }
+
 
     /**
      * @dev Approves a previously proposed transfer. If enough approvals are collected, the transfer is executed.
@@ -89,7 +98,13 @@ contract Token42 is ERC20 {
             uint256 amount = transferRequests[transferId].amount;
             address to = transferRequests[transferId].to;
             transferRequests[transferId].executed = true;
-            _transfer(address(this), to, amount);
+
+            if (transferRequests[transferId].isEth) {
+                require(address(this).balance >= amount, "Not enough ETH in contract");
+                payable(to).transfer(amount);
+            } else {
+                _transfer(address(this), to, amount);
+            }
         }
     }
 
@@ -114,6 +129,7 @@ contract Token42 is ERC20 {
         return tokensToExchange;
     }
 
+
     /**
      * @dev Returns the number of transfer requests.
      * @return The number of transfer requests.
@@ -121,4 +137,25 @@ contract Token42 is ERC20 {
     function transferRequestCount() public view returns (uint256) {
         return transferRequests.length;
     }
+
+    /**
+     * @dev mint new tokens
+     * @param to address to mint to
+     * @param amount amount to mint
+     * @notice Only addresses with the MINT_ROLE can call this function
+     */
+    function mint(address to, uint256 amount) public onlyRole(MINT_ROLE) {
+        _mint(to, amount);
+    }
+
+    /**
+     * @dev burn tokens
+     * @param from address to burn from
+     * @param amount amount to burn
+     * @notice Only addresses with the BURNER_ROLE can call this function
+     */
+    function burn(address from, uint256 amount) public onlyRole(BURNER_ROLE) {
+        _burn(from, amount);
+    }
+
 }

@@ -1,4 +1,4 @@
-import { AddressLike, Contract, Signer } from "ethers";
+import { Contract, LogDescription, Signer } from "ethers";
 import { IZombies } from "../../../interfaces/IZombies";
 import Button from "@mui/material/Button";
 import ZombieAvatar from "../ZombieAvatar";
@@ -19,9 +19,7 @@ interface ZombieAccountItemProps {
   getZombies: () => Promise<void>;
   getTargetZombies: () => Promise<void>;
   contractGame: Contract;
-  myAddress: AddressLike;
   signer: Signer;
-  contractToken: Contract;
 }
 
 const ZombiesTargetItems = ({
@@ -30,16 +28,14 @@ const ZombiesTargetItems = ({
   getZombies,
   getTargetZombies,
   contractGame,
-  contractToken,
-  myAddress,
   signer,
 }: ZombieAccountItemProps) => {
-  const contractWithSigner = contractGame.connect(signer);
-  // const contractTokenSigner = contractToken.connect(signer);
+  const contractWithSigner = contractGame.connect(signer) as Contract;
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [txId, setTxId] = useState<string>("");
   const [selectedZombieId, setSelectedZombieId] = useState<bigint>(0n);
+  const [resultBattle, setResultBattle] = useState<LogDescription>();
 
   useEffect(() => {
     if (myZombies.length > 0) setSelectedZombieId(myZombies[0].id);
@@ -56,9 +52,24 @@ const ZombiesTargetItems = ({
       console.log("attak with : ", selectedZombieId, zombie.id);
       setIsLoading(true);
       const ret = await contractWithSigner.attack(selectedZombieId, zombie.id);
+      console.log("ret : ", ret);
       setTxId(ret.hash);
 
-      await ret.wait();
+      const test = await ret.wait();
+      console.log("win test : ", test);
+
+      const attackResultEvent = contractWithSigner.interface.parseLog(
+        test.logs[0]
+      ); // assuming the log is at index 0, adjust if necessary
+
+      if (attackResultEvent) {
+        setResultBattle(attackResultEvent);
+      }
+
+      // console.log("attackResultEvent : ", attackResultEvent);
+      // const isWin = attackResultEvent.args[0];
+      // console.log("Attack Result:", isWin);
+
       getZombies();
       getTargetZombies();
     } catch (e) {
@@ -67,6 +78,10 @@ const ZombiesTargetItems = ({
     setTxId("");
     setIsLoading(false);
   };
+
+  // useEffect(() => {
+  //   console.log("result battle: ", resultBattle);
+  // }, [resultBattle]);
 
   return (
     <div className='flex flex-col w-[180px] m-1'>
@@ -136,6 +151,16 @@ const ZombiesTargetItems = ({
               View transaction on EtherScan
             </a>
           </div>
+        )}
+
+        {resultBattle != undefined && (
+          <p
+            className={`text-center font-bold ${
+              resultBattle.args[0] ? "text-green-600" : "text-red-600"
+            }`}
+          >
+            You {resultBattle.args[0] ? "win" : "lose"}
+          </p>
         )}
       </div>
     </div>

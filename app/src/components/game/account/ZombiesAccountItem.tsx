@@ -1,9 +1,11 @@
-import { AddressLike, Contract, Signer } from "ethers";
+import { AddressLike, Contract, Signer, isError } from "ethers";
 import { IZombies } from "../../../interfaces/IZombies";
 import Button from "@mui/material/Button";
 import { useState } from "react";
 import ZombieAvatar from "../ZombieAvatar";
 import { CircularProgress } from "@mui/material";
+import CurrencyFrancIcon from "@mui/icons-material/CurrencyFranc";
+import { NavLink } from "react-router-dom";
 
 interface ZombieAccountItemProps {
   zombie: IZombies;
@@ -12,7 +14,6 @@ interface ZombieAccountItemProps {
   myAddress: AddressLike;
   signer: Signer;
   contractToken: Contract;
-  setCurrentPage: React.Dispatch<React.SetStateAction<string>>;
   getEthBalance: () => Promise<void>;
   getFTCZBalance: () => Promise<void>;
 }
@@ -24,12 +25,13 @@ const ZombieAccountItem = ({
   contractToken,
   myAddress,
   signer,
-  setCurrentPage,
   getEthBalance,
   getFTCZBalance,
 }: ZombieAccountItemProps) => {
-  const contractWithSigner = contractGame.connect(signer);
-  const contractTokenSigner = contractToken.connect(signer);
+  const contractWithSigner: Contract = contractGame.connect(signer) as Contract;
+  const contractTokenSigner: Contract = contractToken.connect(
+    signer
+  ) as Contract;
   const readyDate = new Date(parseInt(zombie.readyTime.toString()) * 1000);
 
   const [isLoadingEditName, setIsLoadingEditName] = useState(false);
@@ -37,10 +39,11 @@ const ZombieAccountItem = ({
   const [isLoadingFeed, setIsLoadingFeed] = useState(false);
   const [isLoadingLvlUp, setIsLoadingLvlUp] = useState(false);
   const [isLoadingMint, setIsLoadingMint] = useState(false);
+  const [error, setError] = useState<string>("");
 
-  const changeNameFee = 10 ** 17;
-  const levelUpFee = 10 ** 18;
-  const changeDnaFee = 10 ** 19;
+  const changeNameFee: bigint = 10n ** 17n;
+  const levelUpFee: bigint = 10n ** 18n;
+  const changeDnaFee: bigint = 10n ** 19n;
 
   const [openEditName, setOpenEditName] = useState(false);
   const [openEditDna, setOpenEditDna] = useState(false);
@@ -51,10 +54,12 @@ const ZombieAccountItem = ({
 
   const handleEditName = async () => {
     setOpenEditName(!openEditName);
+    setOpenEditDna(false);
   };
 
   const handleEditDna = async () => {
     setOpenEditDna(!openEditDna);
+    setOpenEditName(false);
   };
 
   const handleValidateChangeName = async (newName: string) => {
@@ -68,7 +73,7 @@ const ZombieAccountItem = ({
       if (allowance < changeNameFee) {
         const tx = await contractTokenSigner.approve(
           import.meta.env.VITE_GAME_ADDRESS,
-          10 ** 13
+          changeNameFee
         );
         await tx.wait();
       }
@@ -81,8 +86,15 @@ const ZombieAccountItem = ({
       getZombies();
       getEthBalance();
       getFTCZBalance();
+      setError("");
     } catch (e) {
-      console.error("Error : ", e);
+      if (isError(e, "CALL_EXCEPTION")) {
+        if (e.reason) setError(e.reason);
+        else if (e.error) setError(e.error.message);
+        else setError(e.toString());
+      } else {
+        console.log("error", e);
+      }
     }
     setIsLoadingEditName(false);
   };
@@ -98,7 +110,7 @@ const ZombieAccountItem = ({
       if (allowance < changeDnaFee) {
         const tx = await contractTokenSigner.approve(
           import.meta.env.VITE_GAME_ADDRESS,
-          10 ** 13
+          changeDnaFee
         );
         await tx.wait();
       }
@@ -111,8 +123,15 @@ const ZombieAccountItem = ({
       getZombies();
       getEthBalance();
       getFTCZBalance();
+      setError("");
     } catch (e) {
-      console.error("Error : ", e);
+      if (isError(e, "CALL_EXCEPTION")) {
+        if (e.reason) setError(e.reason);
+        else if (e.error) setError(e.error.message);
+        else setError(e.toString());
+      } else {
+        console.log("error", e);
+      }
     }
     setIsLoadingEditDna(false);
   };
@@ -131,18 +150,6 @@ const ZombieAccountItem = ({
     if (contractWithSigner === null) return;
     setIsLoadingFeed(true);
     try {
-      // const allowance = await contractToken.allowance(
-      //   myAddress,
-      //   import.meta.env.VITE_GAME_ADDRESS
-      // );
-      // if (allowance.toString() === "0") {
-      //   const tx = await contractTokenSigner.approve(
-      //     import.meta.env.VITE_GAME_ADDRESS,
-      //     10 ** 13
-      //   );
-      //   await tx.wait();
-      // }
-
       const ret = await contractWithSigner.feedHumain(zombie.id);
       setTxId(ret.hash);
       await ret.wait();
@@ -150,8 +157,15 @@ const ZombieAccountItem = ({
       getZombies();
       getEthBalance();
       getFTCZBalance();
+      setError("");
     } catch (e) {
-      console.error("Error : ", e);
+      if (isError(e, "CALL_EXCEPTION")) {
+        if (e.reason) setError(e.reason);
+        else if (e.error) setError(e.error.message);
+        else setError(e.toString());
+      } else {
+        console.log("error", e);
+      }
     }
     setIsLoadingFeed(false);
   };
@@ -160,14 +174,16 @@ const ZombieAccountItem = ({
     if (contractWithSigner === null || contractTokenSigner == null) return;
     setIsLoadingLvlUp(true);
     try {
-      const allowance = await contractToken.allowance(
+      const allowance: bigint = await contractToken.allowance(
         myAddress,
         import.meta.env.VITE_GAME_ADDRESS
       );
-      if (allowance < BigInt(levelUpFee)) {
+      console.log("allowance", allowance.toString());
+      console.log("levelUpFee", levelUpFee.toString());
+      if (allowance < levelUpFee) {
         const tx = await contractTokenSigner.approve(
           import.meta.env.VITE_GAME_ADDRESS,
-          10 ** 13
+          levelUpFee
         );
         console.log("wait allowance");
         await tx.wait();
@@ -181,8 +197,15 @@ const ZombieAccountItem = ({
       setTxId("");
       getEthBalance();
       getFTCZBalance();
+      setError("");
     } catch (e) {
-      console.error("Error : ", e);
+      if (isError(e, "CALL_EXCEPTION")) {
+        if (e.reason) setError(e.reason);
+        else if (e.error) setError(e.error.message);
+        else setError(e.toString());
+      } else {
+        console.log("error", e);
+      }
     }
     setIsLoadingLvlUp(false);
   };
@@ -198,8 +221,15 @@ const ZombieAccountItem = ({
       await ret.wait();
       setTxIdMint("");
       getZombies();
+      setError("");
     } catch (e) {
-      console.warn("Error : ", e);
+      if (isError(e, "CALL_EXCEPTION")) {
+        if (e.reason) setError(e.reason);
+        else if (e.error) setError(e.error.message);
+        else setError(e.toString());
+      } else {
+        console.log("error", e);
+      }
     }
     setIsLoadingMint(false);
   };
@@ -213,7 +243,7 @@ const ZombieAccountItem = ({
         className='flex flex-col justify-around
         border-2 border-gray-700 rounded-b-lg'
       >
-        <div className='text-center my-1'>
+        <div className='text-center mb-1 mt-2'>
           {!zombie.isMint ? (
             <>
               <Button
@@ -270,34 +300,59 @@ const ZombieAccountItem = ({
         <p className='text-center'>Win: {zombie.winCount.toString()}</p>
         <p className='text-center'>Loss: {zombie.lossCount.toString()}</p>
         <p className='text-center'>Next eat: {readyDate.toLocaleString()}</p>
-        <div className='mt-2 text-center flex flex-wrap justify-center items-center pb-2'>
+        <div className='mt-2 text-center flex flex-col flex-wrap justify-center items-center pb-2 mx-2'>
           <Button
             variant='outlined'
             onClick={handleEditName}
             color={openEditName ? "warning" : "primary"}
           >
-            {openEditName ? "Close" : "Edit Name"}
+            {openEditName ? (
+              "Close"
+            ) : (
+              <>
+                <p>
+                  Edit name {"(" + Number(changeNameFee) / 10 ** 18}
+                  <CurrencyFrancIcon fontSize='small' />
+                  {")"}
+                </p>
+              </>
+            )}
             {isLoadingEditName && (
               <CircularProgress size='15px' sx={{ ml: 1 }} />
             )}
           </Button>
+
+          <Button variant='outlined' onClick={handleLevelUp}>
+            Level up {"(" + levelUpFee / 10n ** 18n}
+            <CurrencyFrancIcon fontSize='small' />
+            {")"}
+            {isLoadingLvlUp && <CircularProgress size='15px' sx={{ ml: 1 }} />}
+          </Button>
+
           <Button
             variant='outlined'
             onClick={handleEditDna}
             color={openEditDna ? "warning" : "primary"}
           >
-            {openEditDna ? "Close" : "Edit Dna"}
+            {openEditDna ? (
+              "Close"
+            ) : (
+              <>
+                <p>
+                  Edit dna {"(" + changeDnaFee / 10n ** 18n}
+                  <CurrencyFrancIcon fontSize='small' />
+                  {")"}
+                </p>
+              </>
+            )}
             {isLoadingEditDna && (
               <CircularProgress size='15px' sx={{ ml: 1 }} />
             )}
           </Button>
+
           <Button variant='outlined' onClick={handleFeed}>
             Feed
             {isLoadingFeed && <CircularProgress size='15px' sx={{ ml: 1 }} />}
-          </Button>
-          <Button variant='outlined' onClick={handleLevelUp}>
-            Level up
-            {isLoadingLvlUp && <CircularProgress size='15px' sx={{ ml: 1 }} />}
           </Button>
         </div>
 
@@ -316,22 +371,19 @@ const ZombieAccountItem = ({
         {openEditName && (
           <div className='mt-5 w-full'>
             {zombie.level < 3 ? (
-              <div className='flex flex-col'>
-                <p className='text-red-500 text-center'>
-                  Require lvl 3 to change name
-                </p>
+              <div className='flex flex-col justify-center items-center'>
+                <p className='text-red-500 text-center'>Require lvl 3</p>
                 <Button
                   variant='outlined'
-                  color='warning'
-                  onClick={() => {
-                    setCurrentPage("buy");
-                  }}
+                  color='success'
+                  component={NavLink}
+                  to='/token'
                 >
-                  Buy FTCZ
+                  Exchange Token
                 </Button>
               </div>
             ) : (
-              <form onSubmit={handleSubmit}>
+              <form onSubmit={handleSubmit} className='text-center'>
                 <input
                   type='text'
                   value={name}
@@ -345,32 +397,30 @@ const ZombieAccountItem = ({
         {openEditDna && (
           <div className='mt-5'>
             {zombie.level < 20 ? (
-              <div className='flex flex-col'>
-                <p className='text-red-500 text-center'>
-                  Require lvl 20 to change name
-                </p>
+              <div className='flex flex-col justify-center items-center'>
+                <p className='text-red-500 text-center'>Require lvl 20</p>
                 <Button
                   variant='outlined'
-                  color='warning'
-                  onClick={() => {
-                    setCurrentPage("buy");
-                  }}
+                  color='success'
+                  component={NavLink}
+                  to='/token'
                 >
-                  Buy FTCZ
+                  Exchange Token
                 </Button>
               </div>
             ) : (
-              <form onSubmit={handleSubmitEditDna}>
+              <form onSubmit={handleSubmitEditDna} className='text-center'>
                 <input
                   type='text'
                   value={dna}
                   onChange={(e) => setDna(e.target.value)}
                 />
-                <button type='submit'>Change Name</button>
+                <button type='submit'>Change Dna</button>
               </form>
             )}
           </div>
         )}
+        {error && <p className='text-red-500 text-center'>{error}</p>}
       </div>
     </div>
   );

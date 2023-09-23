@@ -1,33 +1,45 @@
-import { useCallback, useEffect, useState } from "react";
+import {
+  ChangeEvent,
+  FormEvent,
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
 import { TransferRequest } from "../../interfaces/ITransfertRequest";
-import { BaseContract, Contract, Signer } from "ethers";
+import { Contract, Signer, isError, parseEther, AddressLike } from "ethers";
 import { Button, CircularProgress } from "@mui/material";
-import { AddressLike } from "ethers";
 import ProposalTransferItem from "./ProposalTransferItem";
 
 interface ProposalTransferProps {
   contractToken: Contract;
   signer: Signer;
-  contractTokemWithSigner: BaseContract;
+  getEthBalance: () => Promise<void>;
+  getFTCZBalance: () => Promise<void>;
 }
 
 interface formNewProposalTransfer {
   to: AddressLike;
-  amount: bigint;
+  amount: number;
+  isEth: boolean;
 }
 
 const ProposalTransfer = ({
-  contractTokemWithSigner,
+  contractToken,
+  signer,
+  getEthBalance,
+  getFTCZBalance,
 }: ProposalTransferProps) => {
-  // const contractTokemWithSigner = contractToken.connect(signer);
-  const [nbReqiredSignature, setNbReqiredSignature] = useState<bigint>(0n);
+  const contractTokemWithSigner = contractToken.connect(signer) as Contract;
+  const [nbReqiredSignature, setNbReqiredSignature] = useState<number>(0);
   const [transferRequests, setTransferRequests] = useState<TransferRequest[]>(
     []
   );
   const [form, setForm] = useState<formNewProposalTransfer>({
     to: "",
-    amount: 0n,
+    amount: 0,
+    isEth: false,
   });
+  const [error, setError] = useState<string>("");
   const [txIdpropositionTransfert, setTxIdpropositionTransfert] =
     useState<string>("");
 
@@ -37,7 +49,6 @@ const ProposalTransfer = ({
       /* get transfer request */
       const transferRequestCount =
         await contractTokemWithSigner.transferRequestCount();
-      // console.log("transferRequestCount", transferRequestCount);
 
       for (let i = 0; i < transferRequestCount; i++) {
         const transferRequest = await contractTokemWithSigner.transferRequests(
@@ -45,6 +56,7 @@ const ProposalTransfer = ({
         );
         transferRequests.push({
           id: i,
+          isEth: transferRequest.isEth,
           to: transferRequest.to,
           amount: transferRequest.amount,
           approvals: transferRequest.approvals,
@@ -52,37 +64,48 @@ const ProposalTransfer = ({
         });
       }
       setTransferRequests(transferRequests);
-      // console.log("transferRequests", transferRequests);
 
       /* get nb required singature */
       const nbReqiredSignature =
         await contractTokemWithSigner.requiredSignatures();
-      // console.log("nbReqiredSignature", nbReqiredSignature);
       setNbReqiredSignature(nbReqiredSignature);
     } catch (error) {
       console.log("error", error);
     }
   }, [contractTokemWithSigner]);
 
-  const handleNewProposalTransfert = async (event) => {
+  const handleNewProposalTransfert = async (
+    event: FormEvent<HTMLFormElement>
+  ) => {
     event.preventDefault();
     try {
       const tx = await contractTokemWithSigner.proposeTransfer(
         form.to,
-        form.amount
+        parseEther(form.amount.toString()),
+        form.isEth
       );
       console.log("tx", tx);
       setTxIdpropositionTransfert(tx.hash);
+
       await tx.wait();
       setTxIdpropositionTransfert("");
-    } catch (error) {
-      console.log("error", error);
+      setError("");
+      getTransferRequests();
+    } catch (e) {
+      if (isError(e, "CALL_EXCEPTION")) {
+        if (e.reason) setError(e.reason);
+        else if (e.error) setError(e.error.message);
+        else setError(e.toString());
+      } else {
+        console.log("error", e);
+      }
     }
   };
 
-  const handleOnChange = (event) => {
+  const handleOnChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
-    setForm({ ...form, [name]: value });
+    if (name === "isEth") setForm({ ...form, [name]: event.target.checked });
+    else setForm({ ...form, [name]: value });
   };
 
   useEffect(() => {
@@ -91,55 +114,76 @@ const ProposalTransfer = ({
 
   return (
     <div className='w-[66vw]'>
-      <h2 className='text-center text-lg font-bold'>Proposale Transfert</h2>
+      <h2 className='text-center text-lg font-bold mt-5'>
+        New Proposale Transfert
+      </h2>
       <div
         className='flex flex-col justify-center items-center 
         border rounded-md p-3 m-2 w-[66vw]'
       >
-        <form onSubmit={handleNewProposalTransfert}>
-          <label>To </label>
-          <input
-            type='string'
-            name='to'
-            value={form.to.toString()}
-            onChange={handleOnChange}
-            className='w-full'
-          />
+        <form onSubmit={handleNewProposalTransfert} className='w-[66%]'>
+          <div className='flex justify-between items-center'>
+            <label> To </label>
+            <input
+              type='string'
+              name='to'
+              value={form.to.toString()}
+              onChange={handleOnChange}
+              className='w-full m-1'
+            />
+          </div>
 
-          <label>Amount </label>
-          <input
-            type='number'
-            name='amount'
-            value={form.amount.toString()}
-            onChange={handleOnChange}
-            className='w-full'
-          />
+          <div className='flex justify-between items-center'>
+            <label>Amount </label>
+            <input
+              type='number'
+              name='amount'
+              value={form.amount.toString()}
+              onChange={handleOnChange}
+              className='w-full m-1'
+            />
+          </div>
+
+          <div className='flex py-1 '>
+            <input
+              type='checkbox'
+              id='isEth'
+              name='isEth'
+              checked={form.isEth}
+              onChange={handleOnChange}
+            />
+            <label id='test' htmlFor='isEth' className=' ml-2'>
+              Eth transfert
+            </label>
+          </div>
+
           <div className='text-center mt-3'>
             <Button variant='contained' type='submit'>
               Transfert
             </Button>
+            {error && <p className='text-red-500'>{error}</p>}
           </div>
-          {txIdpropositionTransfert && (
-            <div
-              className='flex flex-col justify-center items-center my-5
-              border-[1px] rounded-lg p-5'
-            >
-              <CircularProgress size='30px' />
-              <a
-                href={
-                  "https://goerli.etherscan.io/tx/" + txIdpropositionTransfert
-                }
-                target='_blank'
-                rel='noopener noreferrer'
-              >
-                View transaction
-              </a>
-            </div>
-          )}
         </form>
       </div>
+      {txIdpropositionTransfert && (
+        <div
+          className='flex flex-col justify-center items-center my-5
+              border-[1px] rounded-lg p-5'
+        >
+          <CircularProgress size='30px' />
+          <a
+            href={"https://goerli.etherscan.io/tx/" + txIdpropositionTransfert}
+            target='_blank'
+            rel='noopener noreferrer'
+          >
+            View transaction
+          </a>
+        </div>
+      )}
 
-      <h2 className='text-center text-lg font-bold'>Proposale Transfert</h2>
+      <h2 className='text-center text-lg font-bold mt-5'>
+        Proposale Transfert
+      </h2>
       {transferRequests.map((proposal) => (
         <ProposalTransferItem
           key={proposal.id}
@@ -147,6 +191,8 @@ const ProposalTransfer = ({
           nbReqiredSignature={nbReqiredSignature}
           contractTokemWithSigner={contractTokemWithSigner}
           getTransferRequests={getTransferRequests}
+          getEthBalance={getEthBalance}
+          getFTCZBalance={getFTCZBalance}
         />
       ))}
     </div>

@@ -1,22 +1,28 @@
-import { useCallback, useEffect, useState } from "react";
-import { BaseContract, Contract, parseEther } from "ethers";
+import {
+  ChangeEvent,
+  FormEvent,
+  useCallback,
+  useEffect,
+  useState,
+} from "react";
+import { Contract, Signer, parseEther } from "ethers";
 import { Button, CircularProgress } from "@mui/material";
 
 interface ExchangeProps {
   contractToken: Contract;
-  contractTokenWithSigner: BaseContract;
+  signer: Signer;
   getEthBalance: () => Promise<void>;
   getFTCZBalance: () => Promise<void>;
 }
 
 interface formNewProposalTransfer {
-  ftczAmount: number;
-  ethAmount: number;
+  ftczAmount: string;
+  ethAmount: string;
 }
 
 const Exchange = ({
   contractToken,
-  contractTokenWithSigner,
+  signer,
   getEthBalance,
   getFTCZBalance,
 }: ExchangeProps) => {
@@ -24,12 +30,14 @@ const Exchange = ({
   const [exchangeRatio, setExchangeRatio] = useState<string>("-");
   const [txId, setTxId] = useState<string>("");
   const [form, setForm] = useState<formNewProposalTransfer>({
-    ftczAmount: 0,
-    ethAmount: 0,
+    ftczAmount: "0",
+    ethAmount: "0",
   });
 
   const poolBalance: bigint = 42n * 1000000n * 10n ** 18n;
   const baseRate = 1000;
+
+  const contractTokenWithSigner = contractToken.connect(signer) as Contract;
 
   const getPoolAvailable = useCallback(async () => {
     if (!contractToken) return;
@@ -47,50 +55,48 @@ const Exchange = ({
     return ratioExchange.toFixed(3);
   }, [contractToken, poolBalance]);
 
-  const calculateFTCZValue = async (value: bigint): Promise<number> => {
+  const calculateFTCZValue = async (value: number): Promise<number> => {
     const poolAvailableToken: bigint = await contractToken.balanceOf(
       contractToken.target
     );
     const ratioTokenInPool = Number(poolBalance) / Number(poolAvailableToken);
-    const tokensToExchange = Number(value) * (baseRate / ratioTokenInPool);
+    const tokensToExchange = value * (baseRate / ratioTokenInPool);
     return tokensToExchange;
   };
 
-  const calculateEthValue = async (value: bigint): Promise<number> => {
+  const calculateEthValue = async (value: number): Promise<number> => {
     const poolAvailableToken: bigint = await contractToken.balanceOf(
       contractToken.target
     );
     const ratioTokenInPool = Number(poolBalance) / Number(poolAvailableToken);
-    const ethToExchange = Number(value) / (baseRate / ratioTokenInPool);
+    const ethToExchange = value / (baseRate / ratioTokenInPool);
     return ethToExchange;
   };
 
-  const handleOnChange = async (event) => {
+  const handleOnChange = async (event: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
 
+    console.log("name", name);
+    console.log("value", value, typeof value);
+
     if (name === "ftczAmount") {
-      const ethValue = await calculateEthValue(value);
-      console.log("ethValue", ethValue);
+      const ethValue: number = await calculateEthValue(parseFloat(value));
       setForm({
-        ...form,
         ftczAmount: value,
-        ethAmount: ethValue,
+        ethAmount: ethValue.toString(),
       });
     } else if (name === "ethAmount") {
-      const ftczValue = await calculateFTCZValue(value);
-      console.log("ftczValue", ftczValue);
+      const ftczValue: number = await calculateFTCZValue(parseFloat(value));
       setForm({
-        ...form,
         ethAmount: value,
-        ftczAmount: ftczValue,
+        ftczAmount: ftczValue.toString(),
       });
     }
   };
 
-  const handleFormSubmit = async (event) => {
+  const handleFormSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     try {
-      console.log("form", form);
       const deccimalValue = parseEther(parseFloat(form.ethAmount).toFixed(18));
       const ret = await contractTokenWithSigner.exchangeTokens({
         value: deccimalValue,
@@ -104,8 +110,8 @@ const Exchange = ({
       getPoolAvailable();
       calcRatio();
       setForm({
-        ftczAmount: 0,
-        ethAmount: 0,
+        ftczAmount: "0",
+        ethAmount: "0",
       });
     } catch (e) {
       console.error("error", e);
@@ -138,7 +144,7 @@ const Exchange = ({
           <input
             type='text'
             name='ftczAmount'
-            value={form.ftczAmount.toString()}
+            value={form.ftczAmount}
             onChange={handleOnChange}
           />
           <label> FTCZ {"<=>"} </label>
@@ -146,7 +152,7 @@ const Exchange = ({
           <input
             type='text'
             name='ethAmount'
-            value={form.ethAmount.toString()}
+            value={form.ethAmount}
             onChange={handleOnChange}
           />
           <label> ETH </label>

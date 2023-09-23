@@ -1,5 +1,4 @@
 import Header from "./components/header/Header";
-import AppBody from "./components/AppBody";
 import { useState, useEffect, useCallback } from "react";
 import { tokenABI } from "./utils/token_abi";
 import { gameABI } from "./utils/game_abi";
@@ -10,7 +9,8 @@ import {
   AddressLike,
   formatEther,
 } from "ethers";
-import BuyToken from "./components/token/BuyToken";
+import AppRoutes from "./routes/AppRoutes";
+import { Link } from "react-router-dom";
 
 function App() {
   const [provider, setProvider] = useState<BrowserProvider | null>(null);
@@ -18,7 +18,6 @@ function App() {
   const [contractToken, setContractToken] = useState<Contract | null>(null);
   const [contractGame, setContractGame] = useState<Contract | null>(null);
   const [myAddress, setMyAddress] = useState<AddressLike | null>(null);
-  const [currentPage, setCurrentPage] = useState<string>("home");
 
   const [ethBalance, setEthBalance] = useState<string>("0");
   const [ftczBalance, setFtczBalance] = useState<string>("0");
@@ -92,47 +91,48 @@ function App() {
       {provider && (
         <Header
           setMyAddress={setMyAddress}
-          currentPage={currentPage}
-          setCurrentPage={setCurrentPage}
           ethBalance={ethBalance}
           ftczBalance={ftczBalance}
         />
       )}
-      {currentPage === "home" ? (
-        <>
-          {provider && contractGame && contractToken && myAddress && signer && (
-            <AppBody
-              contractGame={contractGame}
-              contractToken={contractToken}
-              provider={provider}
-              signer={signer}
-              myAddress={myAddress}
-              setCurrentPage={setCurrentPage}
-              getEthBalance={getEthBalance}
-              getFTCZBalance={getFTCZBalance}
-            />
-          )}
-        </>
-      ) : (
-        <>
-          {provider && contractGame && contractToken && myAddress && signer && (
-            <BuyToken
-              contractToken={contractToken}
-              signer={signer}
-              myAddress={myAddress}
-              getEthBalance={getEthBalance}
-              getFTCZBalance={getFTCZBalance}
-            />
-          )}
-        </>
+
+      {provider && contractGame && contractToken && myAddress && signer && (
+        <AppRoutes
+          contractGame={contractGame}
+          contractToken={contractToken}
+          provider={provider}
+          signer={signer}
+          myAddress={myAddress}
+          getEthBalance={getEthBalance}
+          getFTCZBalance={getFTCZBalance}
+        />
       )}
 
       <div className='flex-grow'></div>
 
       {contractGame && contractToken && (
         <div className='flex flex-col justify-center items-center border-t-[1px]'>
-          <p>Token Contract : {contractTokenAddress}</p>
-          <p>Game Contract : {contractGameAddress}</p>
+          <p>
+            Token Contract : &nbsp;
+            <Link
+              to={`https://goerli.etherscan.io/address/${contractTokenAddress}`}
+              target='_blank'
+              rel='noreferrer'
+            >
+              {contractTokenAddress}
+            </Link>
+          </p>
+
+          <p>
+            Game Contract : &nbsp;
+            <Link
+              to={`https://goerli.etherscan.io/address/${contractGameAddress}`}
+              target='_blank'
+              rel='noreferrer'
+            >
+              {contractGameAddress}
+            </Link>
+          </p>
         </div>
       )}
     </div>

@@ -60,11 +60,14 @@ const ZombieAvatar = ({ zombieDna }: ZombieAvatarProps) => {
   const shirtImageSrc = shirtImages[shirtDna % shirtImages.length];
 
   const mouthDna = parseInt(zombieDna.toString().slice(6, 8), 10);
+  const feetDna = parseInt(zombieDna.toString().slice(8, 10), 10);
   const skinDna = parseInt(zombieDna.toString().slice(10, 12), 10);
 
   const armDna = parseInt(zombieDna.toString().slice(12, 14), 10);
   const leftForeArmSrc = leftForeArm[armDna % leftForeArm.length];
   const rightForeArmSrc = rightForeArm[armDna % rightForeArm.length];
+
+  const shoosDna = parseInt(zombieDna.toString().slice(14, 16), 10);
 
   const headStyle = {
     position: "absolute" as const,
@@ -78,7 +81,7 @@ const ZombieAvatar = ({ zombieDna }: ZombieAvatarProps) => {
     left: "35px",
     height: "30px",
     filter: `hue-rotate(${eyeDna * 3.6}deg)`,
-    zIndex: 20,
+    zIndex: 21,
   };
 
   const shirtStyle = {
@@ -97,10 +100,6 @@ const ZombieAvatar = ({ zombieDna }: ZombieAvatarProps) => {
     height: "18px",
     filter: `hue-rotate(${mouthDna * 3.6}deg)`,
     zIndex: 20,
-  };
-
-  const skinStyle = {
-    position: "absolute" as const,
   };
 
   /* ARM */
@@ -161,10 +160,10 @@ const ZombieAvatar = ({ zombieDna }: ZombieAvatarProps) => {
 
   const torsoStyle = {
     position: "absolute" as const,
-    filter: `hue-rotate(${skinDna * 3.6}deg)`,
-    top: "60px",
-    left: "-15px",
-    height: "90px",
+    filter: `hue-rotate(${feetDna * 3.6}deg)`,
+    top: "70px",
+    left: "-10px",
+    height: "80px",
     zIndex: 10,
   };
 
@@ -174,7 +173,62 @@ const ZombieAvatar = ({ zombieDna }: ZombieAvatarProps) => {
     top: "90px",
     left: "-20px",
     height: "100px",
+    display: `${skinDna % 2 ? "block" : "none"}`,
     zIndex: 1,
+  };
+
+  const leftFeetStyle = {
+    position: "absolute" as const,
+    filter: `hue-rotate(${shoosDna * 3.6}deg)`,
+    top: "175px",
+    left: "38px",
+    height: "18px",
+    zIndex: 20,
+  };
+
+  const rightFeetStyle = {
+    position: "absolute" as const,
+    filter: `hue-rotate(${shoosDna * 3.6}deg)`,
+    top: "175px",
+    left: "13px",
+    height: "18px",
+    zIndex: 20,
+  };
+
+  const rightLegStyle = {
+    position: "absolute" as const,
+    filter: `hue-rotate(${feetDna * 3.6}deg)`,
+    top: "160px",
+    left: "13px",
+    height: "25px",
+    zIndex: 5,
+  };
+
+  const leftLegStyle = {
+    position: "absolute" as const,
+    filter: `hue-rotate(${feetDna * 3.6}deg)`,
+    top: "158px",
+    left: "36px",
+    height: "27px",
+    zIndex: 5,
+  };
+
+  const rightThightStyle = {
+    position: "absolute" as const,
+    filter: `hue-rotate(${feetDna * 3.6}deg)`,
+    top: "130px",
+    left: "8px",
+    height: "40px",
+    zIndex: 8,
+  };
+
+  const leftThightStyle = {
+    position: "absolute" as const,
+    filter: `hue-rotate(${feetDna * 3.6}deg)`,
+    top: "130px",
+    left: "28px",
+    height: "40px",
+    zIndex: 8,
   };
 
   return (
@@ -185,7 +239,6 @@ const ZombieAvatar = ({ zombieDna }: ZombieAvatarProps) => {
         alt='torso'
       />
       <img src={shirtImageSrc} alt='shirt' style={shirtStyle} />
-
       {/* ARM */}
       <img
         src='https://cryptozombies.io/course/c65551fc400b8962e59b.png'
@@ -201,7 +254,6 @@ const ZombieAvatar = ({ zombieDna }: ZombieAvatarProps) => {
         style={rightForeArmStyle}
       />
       <img src={leftForeArmSrc} alt='left-forearm' style={leftForeArmStyle} />
-
       {/* HAND  */}
       <img
         src='https://cryptozombies.io/course/c31f02398b1553db09d0.png'
@@ -219,10 +271,44 @@ const ZombieAvatar = ({ zombieDna }: ZombieAvatarProps) => {
         style={mouthStyle}
       />
       <img src={eyeImageSrc} alt='eyes' style={eyesStyle} />
-
       <img
         src='https://cryptozombies.io/course/2a9c2dd34abe8729d503.png'
         style={catLegsStyle}
+      />
+
+      {/* shoos */}
+      <img
+        src='https://cryptozombies.io/course/76c713ac671599e30dc7.png'
+        alt='left-feet'
+        style={leftFeetStyle}
+      />
+      <img
+        src='https://cryptozombies.io/course/c208cfc8da9c5a5b752f.png'
+        alt='right-feet'
+        style={rightFeetStyle}
+      />
+
+      {/* LEG */}
+      <img
+        src='https://cryptozombies.io/course/04db3de2ce7ce5471b40.png'
+        alt='right-left'
+        style={rightLegStyle}
+      />
+      <img
+        src='https://cryptozombies.io/course/e4809f91344864147c7c.png'
+        alt='left-left'
+        style={leftLegStyle}
+      />
+
+      <img
+        src='https://cryptozombies.io/course/0d312dd2774502999c0b.png'
+        alt='left-thight'
+        style={leftThightStyle}
+      />
+      <img
+        src='https://cryptozombies.io/course/6259a1506124d850e805.png'
+        alt='right-thight'
+        style={rightThightStyle}
       />
     </div>
   );

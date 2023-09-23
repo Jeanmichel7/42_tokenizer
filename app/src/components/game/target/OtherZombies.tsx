@@ -7,7 +7,6 @@ interface contractGameProps {
   myZombies: IZombies[];
   getZombies: () => Promise<void>;
   contractGame: Contract;
-  contractToken: Contract;
   myAddress: AddressLike;
   signer: Signer;
 }
@@ -16,7 +15,6 @@ const OtherZombies = ({
   myZombies,
   getZombies,
   contractGame,
-  contractToken,
   myAddress,
   signer,
 }: contractGameProps) => {
@@ -73,8 +71,6 @@ const OtherZombies = ({
             getZombies={getZombies}
             getTargetZombies={getTargetZombies}
             contractGame={contractGame}
-            contractToken={contractToken}
-            myAddress={myAddress}
             signer={signer}
           />
         ))}

@@ -4,22 +4,18 @@ import Button from "@mui/material/Button";
 import LogoutIcon from "@mui/icons-material/Logout";
 import { AddressLike } from "ethers";
 import { IconButton } from "@mui/material";
+import { NavLink, useLocation } from "react-router-dom";
 
 interface HeaderProps {
   setMyAddress: React.Dispatch<React.SetStateAction<AddressLike | null>>;
-  currentPage: string;
-  setCurrentPage: React.Dispatch<React.SetStateAction<string>>;
   ethBalance: string;
   ftczBalance: string;
 }
 
-const Header = ({
-  setMyAddress,
-  currentPage,
-  setCurrentPage,
-  ethBalance,
-  ftczBalance,
-}: HeaderProps) => {
+const Header = ({ setMyAddress, ethBalance, ftczBalance }: HeaderProps) => {
+  const [activePath, setActivePath] = useState("");
+  const location = useLocation();
+
   const [isConnected, setIsConnected] = useState<boolean>(false);
   // const [ethBalance, setEthBalance] = useState<string>("0");
   // const [ftczBalance, setFtczBalance] = useState<string>("0");
@@ -45,6 +41,10 @@ const Header = ({
   //   }
   // }, [contract, signer]);
 
+  useEffect(() => {
+    if (location.pathname) setActivePath(location.pathname.split("/")[1]);
+  }, [location]);
+
   const handleConnection = useCallback(async () => {
     if (window.ethereum) {
       try {
@@ -61,20 +61,24 @@ const Header = ({
     } else {
       setError("Install Metamask Extension");
     }
-  }, []);
+  }, [setMyAddress]);
 
   const handleNetworkChange = async () => {
     const chainId = await window.ethereum.request({ method: "eth_chainId" });
     if (chainId !== "0x5") {
-      // 0x5 is the chain ID for Goerli
       try {
         await window.ethereum.request({
           method: "wallet_switchEthereumChain",
-          params: [{ chainId: "0x5" }], // 0x5 is the chain ID for Goerli
+          params: [{ chainId: "0x5" }],
         });
-      } catch (switchError) {
+      } catch (switchError: unknown) {
         console.log("error", switchError);
-        if (switchError.code === 4902) {
+        if (
+          typeof switchError === "object" &&
+          switchError &&
+          "code" in switchError &&
+          switchError.code === 4902
+        ) {
           try {
             await window.ethereum.request({
               method: "wallet_addEthereumChain",
@@ -131,16 +135,25 @@ const Header = ({
     >
       <p className='font-bold text-lg pl-2'>Tokenizer</p>
 
+      <div className='flex'>
+        <NavLink
+          to='/game'
+          className={`h-full flex justify-center items-center px-3 text-white
+          ${activePath === "game" ? "bg-blue-600" : "initial"} `}
+        >
+          Game
+        </NavLink>
+        <NavLink
+          to='/token'
+          className={`h-full flex justify-center items-center px-3 text-white
+          ${activePath === "token" ? "bg-blue-600" : "initial"} `}
+        >
+          Token
+        </NavLink>
+      </div>
+
       {error && <p className='text-red-500'>{error}</p>}
-      <Button
-        variant='outlined'
-        color='warning'
-        onClick={() =>
-          setCurrentPage((prev) => (prev == "buy" ? "home" : "buy"))
-        }
-      >
-        {currentPage == "home" ? "Token" : "Game"}
-      </Button>
+
       {isConnected ? (
         <div className='flex justify-center items-center'>
           <div className='flex pl-4'>

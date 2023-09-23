@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useState } from "react";
-import { AddressLike, BaseContract, Contract, parseEther } from "ethers";
+import { ChangeEvent, FormEvent, useState } from "react";
+import { AddressLike, Contract, parseEther, Signer } from "ethers";
 import { Button, CircularProgress } from "@mui/material";
 
 interface TransferProps {
-  // contractToken: Contract;
-  contractTokenWithSigner: BaseContract;
+  contractToken: Contract;
+  signer: Signer;
   getEthBalance: () => Promise<void>;
   getFTCZBalance: () => Promise<void>;
 }
@@ -15,23 +15,26 @@ interface formTransfer {
 }
 
 const Transfer = ({
-  // contractToken,
-  contractTokenWithSigner,
+  contractToken,
+  signer,
   getEthBalance,
   getFTCZBalance,
 }: TransferProps) => {
+  const contractTokenWithSigner = contractToken.connect(signer) as Contract;
   const [txId, setTxId] = useState<string>("");
   const [form, setForm] = useState<formTransfer>({
     to: "0x0",
     amount: 0,
   });
 
-  const handleOnChange = (event) => {
+  const handleOnChange = (event: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
     setForm({ ...form, [name]: value });
   };
 
-  const handleFormSubmitTransfert = async (event) => {
+  const handleFormSubmitTransfert = async (
+    event: FormEvent<HTMLFormElement>
+  ) => {
     event.preventDefault();
     try {
       const value: bigint = parseEther(form.amount.toString());
@@ -49,7 +52,7 @@ const Transfer = ({
 
   return (
     <>
-      <h2 className='text-center text-lg font-bold'>Transfert FTCZ</h2>
+      <h2 className='text-center text-lg font-bold mt-5'>Transfert FTCZ</h2>
       <div
         className='flex flex-col justify-center items-center 
         border rounded-md p-3 m-2 w-[66vw]'
