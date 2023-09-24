@@ -133,7 +133,6 @@ contract ZombieHelper is ZombieFeeding {
       attempts++;
     }
 
-    // Redimensionner le tableau de sortie si moins de 5 zombies sont trouvés
     if (count < maxLength) {
         uint[] memory resizedResult = new uint[](count);
         for (uint i = 0; i < count; i++) {

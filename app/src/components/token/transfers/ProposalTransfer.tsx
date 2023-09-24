@@ -5,7 +5,7 @@ import {
   useEffect,
   useState,
 } from "react";
-import { TransferRequest } from "../../interfaces/ITransfertRequest";
+import { ProposalTransfer } from "../../../interfaces/ITransfertRequest";
 import { Contract, Signer, isError, parseEther, AddressLike } from "ethers";
 import { Button, CircularProgress } from "@mui/material";
 import ProposalTransferItem from "./ProposalTransferItem";
@@ -31,7 +31,7 @@ const ProposalTransfer = ({
 }: ProposalTransferProps) => {
   const contractTokemWithSigner = contractToken.connect(signer) as Contract;
   const [nbReqiredSignature, setNbReqiredSignature] = useState<number>(0);
-  const [transferRequests, setTransferRequests] = useState<TransferRequest[]>(
+  const [transferRequests, setTransferRequests] = useState<ProposalTransfer[]>(
     []
   );
   const [form, setForm] = useState<formNewProposalTransfer>({
@@ -44,14 +44,14 @@ const ProposalTransfer = ({
     useState<string>("");
 
   const getTransferRequests = useCallback(async () => {
-    const transferRequests: TransferRequest[] = [];
+    const transferRequests: ProposalTransfer[] = [];
     try {
       /* get transfer request */
       const transferRequestCount =
-        await contractTokemWithSigner.transferRequestCount();
+        await contractTokemWithSigner.proposeTransferCount();
 
       for (let i = 0; i < transferRequestCount; i++) {
-        const transferRequest = await contractTokemWithSigner.transferRequests(
+        const transferRequest = await contractTokemWithSigner.proposalTransfers(
           i
         );
         transferRequests.push({

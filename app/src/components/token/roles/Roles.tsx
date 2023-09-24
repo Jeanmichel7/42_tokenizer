@@ -18,7 +18,7 @@ const Roles = ({ contractToken, signer }: RolesProps) => {
   const [roles, setRoles] = useState<string[]>([]);
 
   const hashMintRole = keccak256(toUtf8Bytes("MINT_ROLE"));
-  const hashBurnRole = keccak256(toUtf8Bytes("BURN_ROLE"));
+  const hashBurnRole = keccak256(toUtf8Bytes("BURNER_ROLE"));
   // const hashAdminRole = keccak256(toUtf8Bytes("DEFAULT_ADMIN_ROLE"));
 
   useEffect(() => {

@@ -6,6 +6,7 @@ import ZombieAvatar from "../ZombieAvatar";
 import { CircularProgress } from "@mui/material";
 import CurrencyFrancIcon from "@mui/icons-material/CurrencyFranc";
 import { NavLink } from "react-router-dom";
+import CountdownTimer from "../../CountdownTimer";
 
 interface ZombieAccountItemProps {
   zombie: IZombies;
@@ -87,6 +88,7 @@ const ZombieAccountItem = ({
       getEthBalance();
       getFTCZBalance();
       setError("");
+      setOpenEditName(false);
     } catch (e) {
       if (isError(e, "CALL_EXCEPTION")) {
         if (e.reason) setError(e.reason);
@@ -124,6 +126,7 @@ const ZombieAccountItem = ({
       getEthBalance();
       getFTCZBalance();
       setError("");
+      setOpenEditDna(false);
     } catch (e) {
       if (isError(e, "CALL_EXCEPTION")) {
         if (e.reason) setError(e.reason);
@@ -185,7 +188,6 @@ const ZombieAccountItem = ({
           import.meta.env.VITE_GAME_ADDRESS,
           levelUpFee
         );
-        console.log("wait allowance");
         await tx.wait();
       }
 
@@ -299,7 +301,8 @@ const ZombieAccountItem = ({
         </div>
         <p className='text-center'>Win: {zombie.winCount.toString()}</p>
         <p className='text-center'>Loss: {zombie.lossCount.toString()}</p>
-        <p className='text-center'>Next eat: {readyDate.toLocaleString()}</p>
+        <p className='text-center'>Next attack </p>
+        <CountdownTimer endTime={readyDate} />
         <div className='mt-2 text-center flex flex-col flex-wrap justify-center items-center pb-2 mx-2'>
           <Button
             variant='outlined'
@@ -351,7 +354,7 @@ const ZombieAccountItem = ({
           </Button>
 
           <Button variant='outlined' onClick={handleFeed}>
-            Feed
+            Attack humain
             {isLoadingFeed && <CircularProgress size='15px' sx={{ ml: 1 }} />}
           </Button>
         </div>

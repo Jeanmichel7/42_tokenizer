@@ -1,11 +1,11 @@
 import { Button, CircularProgress } from "@mui/material";
-import { TransferRequest } from "../../interfaces/ITransfertRequest";
-import { Contract, formatEther } from "ethers";
+import { ProposalTransfer } from "../../../interfaces/ITransfertRequest";
+import { Contract, formatEther, isError } from "ethers";
 import { useState } from "react";
 import CurrencyFrancIcon from "@mui/icons-material/CurrencyFranc";
 
 interface ProposalTransferItemProps {
-  proposal: TransferRequest;
+  proposal: ProposalTransfer;
   nbReqiredSignature: number;
   contractTokemWithSigner: Contract;
   getTransferRequests: () => Promise<void>;
@@ -23,6 +23,7 @@ const ProposalTransferItem = ({
 }: ProposalTransferItemProps) => {
   const [txId, setTxId] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string>("");
 
   const handleApproveProposal = async () => {
     setIsLoading(true);
@@ -32,7 +33,13 @@ const ProposalTransferItem = ({
 
       await ret.wait();
     } catch (e) {
-      console.log(e);
+      if (isError(e, "CALL_EXCEPTION")) {
+        if (e.reason) setError(e.reason);
+        else if (e.error) setError(e.error.message);
+        else setError(e.toString());
+      } else {
+        console.log("error", e);
+      }
     }
     setTxId("");
     setIsLoading(false);
@@ -79,6 +86,7 @@ const ProposalTransferItem = ({
             </Button>
           )}
         </div>
+        {error && <p className='text-red-500 text-center'>{error}</p>}
       </div>
 
       {txId && (

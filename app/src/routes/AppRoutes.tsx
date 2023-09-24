@@ -3,12 +3,11 @@ import { Routes, Route } from "react-router-dom";
 import { CircularProgress } from "@mui/material";
 import { Contract, AddressLike, Signer, Provider } from "ethers";
 import Exchange from "../components/token/Exchange";
-import Transfer from "../components/token/Transfer";
-import ProposalTransfer from "../components/token/ProposalTransfer";
+import Transfer from "../components/token/transfers/Transfer";
+import ProposalTransfer from "../components/token/transfers/ProposalTransfer";
 import Roles from "../components/token/roles/Roles";
+import Vote from "../components/token/votes/Votes";
 
-// const Game = React.lazy(() => import("../pages/Game"));
-// import Token from "../pages/Token";
 const Error404 = React.lazy(() => import("../pages/Error404"));
 const Game = React.lazy(() => import("../pages/Game"));
 const Token = React.lazy(() => import("../pages/Token"));
@@ -49,18 +48,7 @@ const AppRoutes = ({
             />
           }
         />
-        <Route
-          path='/token'
-          element={
-            <Token
-              contractToken={contractToken}
-              signer={signer}
-              myAddress={myAddress}
-              getEthBalance={getEthBalance}
-              getFTCZBalance={getFTCZBalance}
-            />
-          }
-        >
+        <Route path='/token' element={<Token />}>
           <Route
             index
             element={
@@ -116,6 +104,10 @@ const AppRoutes = ({
                 getFTCZBalance={getFTCZBalance}
               />
             }
+          />
+          <Route
+            path='vote'
+            element={<Vote contractToken={contractToken} signer={signer} />}
           />
         </Route>
 

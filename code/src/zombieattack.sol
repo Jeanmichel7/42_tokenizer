@@ -18,8 +18,11 @@ contract ZombieAttack is ZombieHelper {
   }
 
   function attack(uint _zombieId, uint _targetId) external onlyOwnerOf(_zombieId) returns (bool) {
+    require(_isReady(zombies[_zombieId]), "Zombie is not ready");
     Zombie storage myZombie = zombies[_zombieId];
     Zombie storage enemyZombie = zombies[_targetId];
+    require(myZombie.level <= enemyZombie.level + 5, "Zombie target level is too low, max diff: 5");
+    require(myZombie.level + 5 >= enemyZombie.level, "Zombie target level is too high, max diff: 5");
     uint rand = randMod(100);
     bool isWin = rand <= attackVictoryProbability + myZombie.level;
     if (isWin) {

@@ -244,6 +244,16 @@ export const tokenABI = [
   },
   {
     inputs: [
+      { internalType: "uint256", name: "", type: "uint256" },
+      { internalType: "address", name: "", type: "address" },
+    ],
+    name: "hasVoted",
+    outputs: [{ internalType: "bool", name: "", type: "bool" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
       { internalType: "address", name: "spender", type: "address" },
       { internalType: "uint256", name: "addedValue", type: "uint256" },
     ],
@@ -284,6 +294,49 @@ export const tokenABI = [
     type: "function",
   },
   {
+    inputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    name: "proposalTransfers",
+    outputs: [
+      { internalType: "bool", name: "isEth", type: "bool" },
+      { internalType: "address", name: "to", type: "address" },
+      { internalType: "uint256", name: "amount", type: "uint256" },
+      { internalType: "uint256", name: "approvals", type: "uint256" },
+      { internalType: "bool", name: "executed", type: "bool" },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      { internalType: "string", name: "description", type: "string" },
+      { internalType: "uint256", name: "duration", type: "uint256" },
+    ],
+    name: "proposalVote",
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "proposalVoteCount",
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    name: "proposalsVote",
+    outputs: [
+      { internalType: "string", name: "description", type: "string" },
+      { internalType: "uint256", name: "endTime", type: "uint256" },
+      { internalType: "uint256", name: "forVotes", type: "uint256" },
+      { internalType: "uint256", name: "againstVotes", type: "uint256" },
+      { internalType: "bool", name: "executed", type: "bool" },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
     inputs: [
       { internalType: "address", name: "to", type: "address" },
       { internalType: "uint256", name: "amount", type: "uint256" },
@@ -292,6 +345,13 @@ export const tokenABI = [
     name: "proposeTransfer",
     outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
     stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "proposeTransferCount",
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    stateMutability: "view",
     type: "function",
   },
   {
@@ -364,23 +424,13 @@ export const tokenABI = [
     type: "function",
   },
   {
-    inputs: [],
-    name: "transferRequestCount",
-    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [{ internalType: "uint256", name: "", type: "uint256" }],
-    name: "transferRequests",
-    outputs: [
-      { internalType: "bool", name: "isEth", type: "bool" },
-      { internalType: "address", name: "to", type: "address" },
-      { internalType: "uint256", name: "amount", type: "uint256" },
-      { internalType: "uint256", name: "approvals", type: "uint256" },
-      { internalType: "bool", name: "executed", type: "bool" },
+    inputs: [
+      { internalType: "uint256", name: "proposalId", type: "uint256" },
+      { internalType: "bool", name: "support", type: "bool" },
     ],
-    stateMutability: "view",
+    name: "vote",
+    outputs: [],
+    stateMutability: "nonpayable",
     type: "function",
   },
 ];

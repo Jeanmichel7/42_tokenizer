@@ -1,17 +1,24 @@
-import { Contract, LogDescription, Signer } from "ethers";
+import { Contract, LogDescription, Signer, isError } from "ethers";
 import { IZombies } from "../../../interfaces/IZombies";
 import Button from "@mui/material/Button";
 import ZombieAvatar from "../ZombieAvatar";
 import {
   Box,
   CircularProgress,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
   FormControl,
   InputLabel,
   MenuItem,
   Select,
   SelectChangeEvent,
+  Slide,
 } from "@mui/material";
-import { useEffect, useState } from "react";
+import { forwardRef, useEffect, useState } from "react";
+import { TransitionProps } from "@mui/material/transitions";
 
 interface ZombieAccountItemProps {
   zombie: IZombies;
@@ -22,11 +29,20 @@ interface ZombieAccountItemProps {
   signer: Signer;
 }
 
+const Transition = forwardRef(function Transition(
+  props: TransitionProps & {
+    children: React.ReactElement<HTMLElement>;
+  },
+  ref: React.Ref<unknown>
+) {
+  return <Slide direction='up' ref={ref} {...props} />;
+});
+
 const ZombiesTargetItems = ({
   zombie,
   myZombies,
   getZombies,
-  getTargetZombies,
+  // getTargetZombies,
   contractGame,
   signer,
 }: ZombieAccountItemProps) => {
@@ -34,54 +50,65 @@ const ZombiesTargetItems = ({
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [txId, setTxId] = useState<string>("");
-  const [selectedZombieId, setSelectedZombieId] = useState<bigint>(0n);
+  const [selectedZombieId, setSelectedZombieId] = useState<bigint>();
   const [resultBattle, setResultBattle] = useState<LogDescription>();
+  const [error, setError] = useState<string>("");
+  const [openDialog, setOpenDialog] = useState<boolean>(false);
 
   useEffect(() => {
     if (myZombies.length > 0) setSelectedZombieId(myZombies[0].id);
   }, [myZombies]);
 
   const handleChangeSelectedZomie = (event: SelectChangeEvent) => {
-    console.log("event.target.value", event.target.value);
     setSelectedZombieId(BigInt(event.target.value));
   };
 
   const handleAttack = async () => {
     if (contractWithSigner === null) return;
     try {
-      console.log("attak with : ", selectedZombieId, zombie.id);
       setIsLoading(true);
       const ret = await contractWithSigner.attack(selectedZombieId, zombie.id);
-      console.log("ret : ", ret);
       setTxId(ret.hash);
 
       const test = await ret.wait();
-      console.log("win test : ", test);
-
       const attackResultEvent = contractWithSigner.interface.parseLog(
         test.logs[0]
-      ); // assuming the log is at index 0, adjust if necessary
-
+      );
       if (attackResultEvent) {
         setResultBattle(attackResultEvent);
       }
 
-      // console.log("attackResultEvent : ", attackResultEvent);
-      // const isWin = attackResultEvent.args[0];
-      // console.log("Attack Result:", isWin);
-
       getZombies();
-      getTargetZombies();
     } catch (e) {
-      console.error("Error : ", e);
+      if (isError(e, "CALL_EXCEPTION")) {
+        if (e.reason) setError(e.reason);
+        else if (e.error) setError(e.error.message);
+        else setError(e.toString());
+      } else {
+        console.log("unknow error", e);
+      }
     }
     setTxId("");
     setIsLoading(false);
   };
 
-  // useEffect(() => {
-  //   console.log("result battle: ", resultBattle);
-  // }, [resultBattle]);
+  const handleOpenDialog = () => {
+    setOpenDialog(true);
+  };
+
+  const handleCloseDialog = () => {
+    setOpenDialog(false);
+  };
+
+  const zombieIsReady = (zombie: IZombies) => {
+    console.log(
+      "ready time : ",
+      zombie.readyTime,
+      "now :",
+      Math.floor(Date.now() / 1000)
+    );
+    return zombie.readyTime <= Math.floor(Date.now() / 1000);
+  };
 
   return (
     <div className='flex flex-col w-[180px] m-1'>
@@ -114,7 +141,11 @@ const ZombiesTargetItems = ({
                 <Select
                   labelId='simple-select-label'
                   id='simple-select'
-                  value={selectedZombieId ? selectedZombieId.toString() : ""}
+                  value={
+                    selectedZombieId != undefined
+                      ? selectedZombieId.toString()
+                      : ""
+                  }
                   label='Zombie to attack'
                   onChange={handleChangeSelectedZomie}
                   sx={{ color: "white" }}
@@ -124,44 +155,92 @@ const ZombiesTargetItems = ({
                       value={zombie.id.toString()}
                       key={zombie.id.toString()}
                     >
-                      {zombie.name}
+                      {zombieIsReady(zombie)
+                        ? zombie.name
+                        : zombie.name + " (not ready)"}
                     </MenuItem>
                   ))}
                 </Select>
               </FormControl>
             </Box>
-            <Button variant='outlined' onClick={handleAttack}>
+            <Button variant='outlined' onClick={handleOpenDialog}>
               Attack
               {isLoading && <CircularProgress size='15px' sx={{ ml: 1 }} />}
             </Button>
-          </div>
-        )}
-        {txId && (
-          <div
-            className='flex flex-col justify-center items-center mt-2
-            border-[1px] border-gray-700 rounded-lg py-2'
-          >
-            <a
-              href={"https://goerli.etherscan.io/tx/" + txId}
-              target='_blank'
-              rel='noopener noreferrer'
-              style={{ wordWrap: "break-word" }}
-              className='text-center'
-            >
-              View transaction on EtherScan
-            </a>
+            {error && <p className='text-red-500'>{error}</p>}
           </div>
         )}
 
-        {resultBattle != undefined && (
-          <p
-            className={`text-center font-bold ${
-              resultBattle.args[0] ? "text-green-600" : "text-red-600"
-            }`}
-          >
-            You {resultBattle.args[0] ? "win" : "lose"}
-          </p>
-        )}
+        <Dialog
+          open={openDialog}
+          TransitionComponent={Transition}
+          keepMounted
+          onClose={handleCloseDialog}
+          aria-describedby='alert-dialog-slide-description'
+        >
+          <DialogTitle>
+            Attack {zombie.name} lvl {zombie.level.toString()} ?
+          </DialogTitle>
+          <DialogContent>
+            <DialogContentText id='alert-dialog-slide-description'>
+              <span>
+                Your zombie {myZombies[Number(selectedZombieId)]?.name} lvl{" "}
+                {myZombies[Number(selectedZombieId)]?.level.toString()} will
+                attack {zombie.name} lvl {zombie.level.toString()}
+                <br />
+              </span>
+              <span>
+                If you win, the zombie gains a level and you have a new zombie
+                <br />
+              </span>
+              <span>
+                Win calcul: 30% + zombie level
+                <br />
+              </span>
+              <span>Your win rate is : {30 + Number(zombie.level)} %</span>
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={handleCloseDialog}
+              color='warning'
+              variant='outlined'
+            >
+              Cancel
+            </Button>
+
+            <Button onClick={handleAttack} color='success' variant='outlined'>
+              Attack
+            </Button>
+          </DialogActions>
+          {txId && (
+            <div
+              className='flex flex-col justify-center items-center mt-2
+            border-[1px] border-gray-700 rounded-lg py-2'
+            >
+              <a
+                href={"https://goerli.etherscan.io/tx/" + txId}
+                target='_blank'
+                rel='noopener noreferrer'
+                style={{ wordWrap: "break-word" }}
+                className='text-center'
+              >
+                View transaction on EtherScan
+                <CircularProgress size='15px' sx={{ ml: 1 }} />
+              </a>
+            </div>
+          )}
+
+          {resultBattle != undefined && (
+            <p
+              className={`text-center font-bold h-10 ${
+                resultBattle.args[0] ? "text-green-600" : "text-red-600"
+              }`}
+            >
+              You {resultBattle.args[0] ? "win" : "lose"}
+            </p>
+          )}
+        </Dialog>
       </div>
     </div>
   );
