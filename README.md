@@ -2,9 +2,9 @@
 
 ## 📋 Résumé
 
-Jeton numérique unique ERC-20, le CryptoZombie42, sur le reseau Goerli Ethereum.
+Jeton numérique unique ERC-20, le CryptoZombie42, sur le réseau Goerli Ethereum.
 
-Le jeton FTVZ42, sert de monnaie virtuelle au sein du jeu, permettant aux joueurs d'acheter des améliorations pour leurs zombies, de changer leurs noms ou d'ajuster leurs codes ADN. Le jeton est egalement utiliser pour proposer et voter des ameliorations au jeu.
+Le jeton FTCZ42, sert de monnaie virtuelle au sein d'un jeu, permettant aux joueurs d'acheter des améliorations pour leurs zombies, de changer leurs noms ou d'ajuster leurs codes ADN. Le jeton est également utilisé pour proposer et voter des ameliorations au jeu.
 Ce projet vise à créer un petit jeu de type CryptoZombies, dans lequel les joueurs peuvent créer des zombies non fongibles (NFT) et les améliorer en utilisant le token ERC-20.
 
 Dans le cadre de ce projet, j'ai également développé une application React qui sert de plateforme pour tester et interagir avec les diverses fonctionnalités du jeton.
