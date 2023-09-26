@@ -1,6 +1,7 @@
 #!/bin/bash
 
 source ../.env
+
 #deploy token
 ./deployToken.sh
 

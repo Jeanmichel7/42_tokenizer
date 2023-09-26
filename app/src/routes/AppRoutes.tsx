@@ -35,6 +35,20 @@ const AppRoutes = ({
     <React.Suspense fallback={<CircularProgress />}>
       <Routes>
         <Route
+          index
+          element={
+            <Game
+              contractGame={contractGame}
+              contractToken={contractToken}
+              provider={provider}
+              signer={signer}
+              myAddress={myAddress}
+              getEthBalance={getEthBalance}
+              getFTCZBalance={getFTCZBalance}
+            />
+          }
+        />
+        <Route
           path='/game'
           element={
             <Game

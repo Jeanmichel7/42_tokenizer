@@ -4,9 +4,19 @@ source ../.env
 echo "Deploying CryptoZombie Game to Goerli testnet"
 echo "============================"
 echo "GOERLI_RPC_URL: $GOERLI_RPC_URL\n"
+
+git submodule update --init --recursive
 cd ../code
 
 # Deploy game
+
+if [ -z "$TOKEN_ADDRESS" ]; then
+    echo "Please define TOKEN_ADDRESS in the .env file at the project root."
+    exit 1
+fi
+
+echo "Deploying ZombieOwnership contract..."
+
 forge create \
   src/zombieownership.sol:ZombieOwnership \
   --constructor-args $TOKEN_ADDRESS \

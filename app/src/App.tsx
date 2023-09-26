@@ -18,6 +18,7 @@ function App() {
   const [contractToken, setContractToken] = useState<Contract | null>(null);
   const [contractGame, setContractGame] = useState<Contract | null>(null);
   const [myAddress, setMyAddress] = useState<AddressLike | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const [ethBalance, setEthBalance] = useState<string>("0");
   const [ftczBalance, setFtczBalance] = useState<string>("0");
@@ -47,7 +48,9 @@ function App() {
   useEffect(() => {
     const loadWeb3 = async () => {
       if (!window.ethereum) {
-        console.log("MetaMask not installed; using read-only defaults");
+        setError(
+          "MetaMask not installed, add the extension to your browser to continue"
+        );
         // setProvider(ethers.getDefaultProvider("goerli"));
       } else {
         const provider = new BrowserProvider(window.ethereum);
@@ -88,6 +91,11 @@ function App() {
 
   return (
     <div className='flex flex-col h-screen'>
+      {error && (
+        <div className='flex justify-center items-center h-screen'>
+          <p className='text-red-400 text-lg font-bold'>{error}</p>
+        </div>
+      )}
       {provider && (
         <Header
           setMyAddress={setMyAddress}

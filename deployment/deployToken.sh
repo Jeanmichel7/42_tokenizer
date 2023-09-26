@@ -5,6 +5,7 @@ echo "Deploying Token to Goerli testnet"
 echo "============================"
 echo "GOERLI_RPC_URL: $GOERLI_RPC_URL"
 
+git submodule update --init --recursive
 cd ../code
 
 # Create the array of multisig owners
@@ -48,6 +49,14 @@ tokenAddress=$(grep -oP '(?<=Deployed to: )\S+' tmp_log_deploy_token.txt)
 echo "Deployed FTCZ token contract at address: $tokenAddress"
 
 echo "Updating .env file with the new TOKEN_ADDRESS"
-sed -i.bak "s/TOKEN_ADDRESS=.*/TOKEN_ADDRESS=$tokenAddress/" ../.env
+
+touch ../.env
+grep -q "TOKEN_ADDRESS=" ../.env
+if [ $? -eq 0 ]; then
+    sed -i "s/TOKEN_ADDRESS=.*/TOKEN_ADDRESS=$TOKEN_ADDRESS/" ../.env
+else
+    echo "TOKEN_ADDRESS=$TOKEN_ADDRESS" >> ../.env
+fi
+
 
 rm tmp_log_deploy_token.txt
